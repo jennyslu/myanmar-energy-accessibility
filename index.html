@@ -27,44 +27,42 @@ text.big-text {
 </head>
 <body>
 <div id="main-wrapper">
-    <!-- <button id="zoom_in">+</button>
-    <button id="zoom_out">-</button> -->
 <svg></svg>
 
 <div id="tooltip" class="tooltip">
     <h3 class="name"></h3>
     <div data-metric="HC01_EST_VC04" class="line">
-        <div class="HC01_EST_VC04 symbol"></div> Drive Alone
+        <div class="HC01_EST_VC04 symbol"></div> Electricity
         <div class="HC01_EST_VC04_val moe"></div>
         <div class="HC01_EST_VC04_val val"></div>
     </div>
     <div data-metric="HC01_EST_VC05" class="line">
-        <div class="HC01_EST_VC05 symbol"></div> Carpool
+        <div class="HC01_EST_VC05 symbol"></div> Kerosene
         <div class="HC01_EST_VC05_val moe"></div>
         <div class="HC01_EST_VC05_val val"></div>
     </div>
     <div data-metric="HC01_EST_VC10" class="line">
-        <div class="HC01_EST_VC10 symbol"></div> Public Trans.
+        <div class="HC01_EST_VC10 symbol"></div> Candle
         <div class="HC01_EST_VC10_val moe"></div>
         <div class="HC01_EST_VC10_val val"></div>
     </div>
     <div data-metric="HC01_EST_VC11" class="line">
-        <div class="HC01_EST_VC11 symbol"></div> Walk
+        <div class="HC01_EST_VC11 symbol"></div> Battery
         <div class="HC01_EST_VC11_val moe"></div>
         <div class="HC01_EST_VC11_val val"></div>
     </div>
     <div data-metric="HC01_EST_VC12" class="line">
-        <div class="HC01_EST_VC12 symbol"></div> Bicycle
+        <div class="HC01_EST_VC12 symbol"></div> Private Generator
         <div class="HC01_EST_VC12_val moe"></div>
         <div class="HC01_EST_VC12_val val"></div>
     </div>
     <div data-metric="HC01_EST_VC13" class="line">
-        <div class="HC01_EST_VC13 symbol"></div> Taxi or Other
+        <div class="HC01_EST_VC13 symbol"></div> Private Water Mill
         <div class="HC01_EST_VC13_val moe"></div>
         <div class="HC01_EST_VC13_val val"></div>
     </div>
     <div data-metric="HC01_EST_VC14" class="line">
-        <div class="HC01_EST_VC14 symbol"></div> Work from Home
+        <div class="HC01_EST_VC14 symbol"></div> Solar and Other
         <div class="HC01_EST_VC14_val moe"></div>
         <div class="HC01_EST_VC14_val val"></div>
     </div>
@@ -95,7 +93,7 @@ var path = d3.geo.path()
     .projection(projection);
 
 var zoom = d3.behavior.zoom()
-    .scaleExtent([1, 20])
+    .scaleExtent([1, 30])
     .on('zoom', zoomed);
 
 var svg = d3.select('svg')
@@ -103,9 +101,6 @@ var svg = d3.select('svg')
     .attr('height', height);
 
 var g = svg.append('g');
-
-// svg.on('wheel.zoom', null);
-// svg.on('mousewheel.zoom', null);
 
 svg.call(zoom)
     .call(zoom.event);
@@ -120,36 +115,67 @@ var bigText = g.append('text')
 
 function zoomed() {
     g.attr("transform",
-        "translate(" + zoom.translate() + ")" + "scale(" + zoom.scale() + ")"
-    );
+        "translate(" + zoom.translate() + ")" + "scale(" + zoom.scale() + ")");
 };
 
-d3.json('data/ts_1.geojson', function(error, mapData) {
+d3.json('data/ts_2.geojson', function(error, mapData) {
+    var tooltip = d3.select("#tooltip")
+     .attr("class", "tooltip")
+     .style("opacity", 0);
+
     var features = mapData.features;
 
     color.domain([0, d3.max(features, popFn)]);
 
     mapLayer.selectAll('path')
         .data(features)
-        .enter().append('path')
+        .enter()
+        .append('path')
         .attr('d', path)
         .attr('vector-effect', 'non-scaling-stroke')
         .style('fill', fillFn)
-        .on('mouseover', mouseover)
-        .on('mouseout', mouseout);
+        .on("mouseover", function(d) {
+             d3.select(this).classed("selected", true);
+             tooltip.transition().duration(100)
+               .style("opacity", 1)
+             if (d3.event.pageX > (width - 200)) {
+                 tooltip.style("left", (d3.event.pageX - 210) + "px");
+             } else {
+                 tooltip.style("left", (d3.event.pageX + 20) + "px")
+                      .style("top", (d3.event.pageY -30) + "px");
+             }
+             if (d3.event.pageY > (height - 150)) {
+                 tooltip.style("top", (d3.event.pageY -140) + "px");
+             } else {
+                 tooltip.style("top", (d3.event.pageY -30) + "px");
+             }
+
+             tooltip.select(".name").text(d.properties.TS + " - Pop: " + d.properties.Total);
+
+             tooltip.select(".HC01_EST_VC04_val.val").text((d.properties.Prop_Electricity*100).toFixed(1) + "%")
+             tooltip.select(".HC01_EST_VC05_val.val").text((d.properties.Prop_Kerosene*100).toFixed(1) + "%")
+             tooltip.select(".HC01_EST_VC10_val.val").text((d.properties.Prop_Candle*100).toFixed(1) + "%")
+             tooltip.select(".HC01_EST_VC11_val.val").text((d.properties.Prop_Battery*100).toFixed(1) + "%")
+             tooltip.select(".HC01_EST_VC12_val.val").text((d.properties.Prop_Generator_Private*100).toFixed(1) + "%")
+             tooltip.select(".HC01_EST_VC13_val.val").text((d.properties.Prop_Water_Mill_Private*100).toFixed(1) + "%")
+             tooltip.select(".HC01_EST_VC14_val.val").text(((d.properties.Prop_Solar_System_Energy + d.properties.Prop_Other)*100).toFixed(1) + "%")
+           })
+        .on("mouseout", function() {
+            d3.select(this).classed("selected", false);
+            tooltip.transition().duration(300)
+              .style("opacity", 0);
+            });
+
 });
 
 function mouseover(d) {
-    d3.select(this).style('fill', 'orange');
     textArt(nameFn(d));
 };
 
 function mouseout(d) {
-    mapLayer.selectAll('path')
-        .style('fill', function(d) {
-            return centered && d === centered ? '#D5708B' : fillFn(d);
-        })
-    bigText.text('');
+    d3.select(this).classed("selected", false);
+    tooltip.transition().duration(300)
+        .style("opacity", 0);
 };
 
 function textArt(text) {
@@ -160,11 +186,6 @@ function nameFn(d) {
     return d && d.properties ? d.properties.TS : null;
 };
 
-function nameLength(d) {
-    var n = nameFn(d);
-    return n ? n.length : 0;
-};
-
 function popFn(d) {
     return d && d.properties ? d.properties.Total : 0;
 };
@@ -172,45 +193,6 @@ function popFn(d) {
 function fillFn(d) {
     return color(popFn(d));
 };
-
-/*
-// Zoom buttons
-svg.selectAll(".button")
-    .data(['zoom_in', 'zoom_out'])
-    .enter()
-    .append("g")
-    .attr("id", function(d){return d})
-    .attr("class", "button")
-    .attr({x: 20, width: 20, height: 20})
-    .append("rect")
-    .attr("y", function(d,i) { return 20 + 25*i })
-    .attr({x: 20, width: 20, height: 20});
-
-// Plus button
-svg.select("#zoom_in")
-    .append("line")
-    .attr({x1: 25, y1: 30, x2: 35, y2: 30 })
-    .attr("stroke", "#fff")
-    .attr("stroke-width", "2px");
-
-svg.select("#zoom_in")
-    .append("line")
-    .attr({x1: 30, y1: 25, x2: 30, y2: 35 })
-    .attr("stroke", "#fff")
-    .attr("stroke-width", "2px");
-
-// Minus button
-svg.select("#zoom_out")
-    .append("line")
-    .attr({x1: 25, y1: 55, x2: 35, y2: 55 })
-    .attr("stroke", "#fff")
-    .attr("stroke-width", "2px");
-
-svg.selectAll(".button")
-    .on("click", zoomClick);
-
-svg.select("#progress-image").remove();
-*/
 
 function zoomClick() {
     var clicked = d3.event.target,
@@ -256,8 +238,6 @@ function interpolateZoom (translate, scale) {
                 };
             });
 };
-
-// d3.selectAll('button').on('click', zoomClick);
 
 </script>
 </body>
