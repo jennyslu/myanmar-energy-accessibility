@@ -27,6 +27,8 @@ text.big-text {
 </head>
 <body>
 <div id="main-wrapper">
+    <!-- <button id="zoom_in">+</button>
+    <button id="zoom_out">-</button> -->
 <svg></svg>
 
 <div id="tooltip" class="tooltip">
@@ -92,11 +94,21 @@ var projection = d3.geo.mercator()
 var path = d3.geo.path()
     .projection(projection);
 
+var zoom = d3.behavior.zoom()
+    .scaleExtent([1, 20])
+    .on('zoom', zoomed);
+
 var svg = d3.select('svg')
     .attr('width', width)
     .attr('height', height);
 
 var g = svg.append('g');
+
+// svg.on('wheel.zoom', null);
+// svg.on('mousewheel.zoom', null);
+
+svg.call(zoom)
+    .call(zoom.event);
 
 var mapLayer = g.append('g')
     .classed('map-layer', true);
@@ -105,6 +117,12 @@ var bigText = g.append('text')
     .classed('big-text', true)
     .attr('x', 100)
     .attr('y', 100);
+
+function zoomed() {
+    g.attr("transform",
+        "translate(" + zoom.translate() + ")" + "scale(" + zoom.scale() + ")"
+    );
+};
 
 d3.json('data/ts_1.geojson', function(error, mapData) {
     var features = mapData.features;
@@ -119,79 +137,6 @@ d3.json('data/ts_1.geojson', function(error, mapData) {
         .style('fill', fillFn)
         .on('mouseover', mouseover)
         .on('mouseout', mouseout);
-
-    // Zoom buttons
-    svg.selectAll(".button")
-        .data(['zoom_in', 'zoom_out'])
-        .enter()
-        .append("g")
-        .attr("id", function(d){return d})
-        .attr("class", "button")
-        .attr({x: 20, width: 20, height: 20})
-        .append("rect")
-        .attr("y", function(d,i) { return 20 + 25*i })
-        .attr({x: 20, width: 20, height: 20});
-
-    // Plus button
-    svg.select("#zoom_in")
-        .append("line")
-        .attr({x1: 25, y1: 30, x2: 35, y2: 30 })
-        .attr("stroke", "#fff")
-        .attr("stroke-width", "2px");
-
-    svg.select("#zoom_in")
-        .append("line")
-        .attr({x1: 30, y1: 25, x2: 30, y2: 35 })
-        .attr("stroke", "#fff")
-        .attr("stroke-width", "2px");
-
-    // Minus button
-    svg.select("#zoom_out")
-        .append("line")
-        .attr({x1: 25, y1: 55, x2: 35, y2: 55 })
-        .attr("stroke", "#fff")
-        .attr("stroke-width", "2px");
-
-    svg.selectAll(".button")
-        .on("click", function() {
-            d3.event.preventDefault();
-
-            var scale = zoom.scale(),
-                extent = zoom.scaleExtent(),
-                translate = zoom.translate(),
-                x = translate[0],
-                y = translate[1],
-                factor = (this.id === 'zoom_in') ? 2 : 1/2,
-                target_scale = scale * factor;
-
-            var clamped_target_scale = Math.max(extent[0],
-                Math.min(extent[1], target_scale));
-
-            if (clamped_target_scale != target_scale) {
-                target_scale = clamped_target_scale;
-                factor = target_scale / scale;
-            }
-
-            // Center each vector, stretch, then put back
-            x = (x - center[0]) * factor + center[0];
-            y = (y - center[1]) * factor + center[1];
-
-            // Transition to the new view over 350ms
-            d3.transition()
-                .duration(350)
-                .tween("zoom", function() {
-                    var interpolate_scale = d3.interpolate(scale, target_scale),
-                        interpolate_trans = d3.interpolate(translate, [x,y]);
-
-                    return function(t) {
-                        zoom.scale(interpolate_scale(t))
-                            .translate(interpolate_trans(t));
-                        svg.call(zoom.event);
-                    };
-                });
-            });
-
-            svg.select("#progress-image").remove();
 });
 
 function mouseover(d) {
@@ -227,6 +172,92 @@ function popFn(d) {
 function fillFn(d) {
     return color(popFn(d));
 };
+
+/*
+// Zoom buttons
+svg.selectAll(".button")
+    .data(['zoom_in', 'zoom_out'])
+    .enter()
+    .append("g")
+    .attr("id", function(d){return d})
+    .attr("class", "button")
+    .attr({x: 20, width: 20, height: 20})
+    .append("rect")
+    .attr("y", function(d,i) { return 20 + 25*i })
+    .attr({x: 20, width: 20, height: 20});
+
+// Plus button
+svg.select("#zoom_in")
+    .append("line")
+    .attr({x1: 25, y1: 30, x2: 35, y2: 30 })
+    .attr("stroke", "#fff")
+    .attr("stroke-width", "2px");
+
+svg.select("#zoom_in")
+    .append("line")
+    .attr({x1: 30, y1: 25, x2: 30, y2: 35 })
+    .attr("stroke", "#fff")
+    .attr("stroke-width", "2px");
+
+// Minus button
+svg.select("#zoom_out")
+    .append("line")
+    .attr({x1: 25, y1: 55, x2: 35, y2: 55 })
+    .attr("stroke", "#fff")
+    .attr("stroke-width", "2px");
+
+svg.selectAll(".button")
+    .on("click", zoomClick);
+
+svg.select("#progress-image").remove();
+*/
+
+function zoomClick() {
+    var clicked = d3.event.target,
+        direction = 1,
+        factor = 0.2,
+        target_zoom = 1,
+        center = [width / 2, height / 2],
+        extent = zoom.scaleExtent(),
+        translate = zoom.translate(),
+        translate0 = [],
+        l = [],
+        view = {x: translate[0], y: translate[1], k: zoom.scale()};
+
+    d3.event.preventDefault();
+    direction = (this.id === 'zoom_in') ? 1 : -1;
+    target_zoom = zoom.scale() * (1 + factor * direction);
+
+    if (target_zoom < extent[0] || target_zoom > extent[1]) { return false; }
+
+    translate0 = [(center[0] - view.x) / view.k, (center[1] - view.y) / view.k];
+    view.k = target_zoom;
+    l = [translate0[0] * view.k + view.x, translate0[1] * view.k + view.y];
+
+    view.x += center[0] - l[0];
+    view.y += center[1] - l[1];
+
+    interpolateZoom([view.x, view.y], view.k);
+};
+
+function interpolateZoom (translate, scale) {
+    var self = this;
+    return
+        d3.transition()
+            .duration(350)
+            .tween("zoom", function () {
+                var iTranslate = d3.interpolate(zoom.translate(), translate),
+                    iScale = d3.interpolate(zoom.scale(), scale);
+
+                return function (t) {
+                    zoom.scale(iScale(t))
+                        .translate(iTranslate(t));
+                    zoomed();
+                };
+            });
+};
+
+// d3.selectAll('button').on('click', zoomClick);
 
 </script>
 </body>
