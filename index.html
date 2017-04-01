@@ -1,436 +1,481 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <style type='text/css'>
-    @import url(https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300|Josefin+Slab|Arvo|Lato|Vollkorn|Abril+Fatface|Old+Standard+TT|Droid+Sans|Lobster|Inconsolata|Montserrat|Playfair+Display|Karla|Alegreya|Libre+Baskerville|Merriweather|Lora|Archivo+Narrow|Neuton|Signika|Questrial|Fjalla+One|Bitter|Varela+Round);
+  <title>Myanmar Energy Accesibiility</title>
+  <link rel="stylesheet" href="style.css" type="text/css" media="screen" />
+  <style type='text/css'>
+  @import url(https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300|Josefin+Slab|Arvo|Lato|Vollkorn|Abril+Fatface|Old+Standard+TT|Droid+Sans|Lobster|Inconsolata|Montserrat|Playfair+Display|Karla|Alegreya|Libre+Baskerville|Merriweather|Lora|Archivo+Narrow|Neuton|Signika|Questrial|Fjalla+One|Bitter|Varela+Round);
 
-    .background {
-      fill: #eee;
-      pointer-events: all;
-    }
+  .background {
+    fill: #eee;
+    pointer-events: all;
+  }
 
-    .map-layer {
-      fill: #fff;
-      stroke: #aaa;
-    }
+  .map-layer {
+    fill: #fff;
+    stroke: #aaa;
+  }
 
-    .effect-layer{
-      pointer-events:none;
-    }
+  .effect-layer{
+    pointer-events:none;
+  }
 
-    text{
-      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      font-weight: 300;
-    }
+  text{
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 300;
+  }
 
-    text.big-text{
-      font-size: 30px;
-      font-weight: 400;
-    }
+  text.big-text{
+    font-size: 30px;
+    font-weight: 400;
+  }
 
-    .effect-layer text, text.dummy-text{
-      font-size: 12px;
-    }
-    </style>
+  .effect-layer text, text.dummy-text{
+    font-size: 12px;
+  }
+  </style>
 </head>
 <body>
-    <svg></svg>
-    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-    <script>
-    var width = 1200,
-        height = 1200,
-        centered;
+<div id="main-wrapper">
+<svg></svg>
 
-    var color = d3.scale.linear()
-        .domain([1, 20])
-        .clamp(true)
-        .range(['#fff', '#409A99']);
+<div id="tooltip" class="tooltip">
+    <h3 class="name"></h3>
+    <div data-metric="HC01_EST_VC04" class="line">
+        <div class="HC01_EST_VC04 symbol"></div> Drive Alone
+        <div class="HC01_EST_VC04_val moe"></div>
+        <div class="HC01_EST_VC04_val val"></div>
+    </div>
+    <div data-metric="HC01_EST_VC05" class="line">
+        <div class="HC01_EST_VC05 symbol"></div> Carpool
+        <div class="HC01_EST_VC05_val moe"></div>
+        <div class="HC01_EST_VC05_val val"></div>
+    </div>
+    <div data-metric="HC01_EST_VC10" class="line">
+        <div class="HC01_EST_VC10 symbol"></div> Public Trans.
+        <div class="HC01_EST_VC10_val moe"></div>
+        <div class="HC01_EST_VC10_val val"></div>
+    </div>
+    <div data-metric="HC01_EST_VC11" class="line">
+        <div class="HC01_EST_VC11 symbol"></div> Walk
+        <div class="HC01_EST_VC11_val moe"></div>
+        <div class="HC01_EST_VC11_val val"></div>
+    </div>
+    <div data-metric="HC01_EST_VC12" class="line">
+        <div class="HC01_EST_VC12 symbol"></div> Bicycle
+        <div class="HC01_EST_VC12_val moe"></div>
+        <div class="HC01_EST_VC12_val val"></div>
+    </div>
+    <div data-metric="HC01_EST_VC13" class="line">
+        <div class="HC01_EST_VC13 symbol"></div> Taxi or Other
+        <div class="HC01_EST_VC13_val moe"></div>
+        <div class="HC01_EST_VC13_val val"></div>
+    </div>
+    <div data-metric="HC01_EST_VC14" class="line">
+        <div class="HC01_EST_VC14 symbol"></div> Work from Home
+        <div class="HC01_EST_VC14_val moe"></div>
+        <div class="HC01_EST_VC14_val val"></div>
+    </div>
+</div>
 
-    var projection = d3.geo.mercator()
-        .scale(3000)
-        .center([96.7, 19.1])
-        .translate([width / 2, height / 2]);
+</div><!-- @end #main-wrapper -->
 
-    var path = d3.geo.path()
-        .projection(projection);
-
-    var svg = d3.select('svg')
-        .attr('width', width)
-        .attr('height', height);
-
-    var g = svg.append('g');
-
-    var mapLayer = g.append('g')
-        .classed('map-layer', true);
-
-    var bigText = g.append('text')
-        .classed('big-text', true)
-        .attr('x', 100)
-        .attr('y', 100);
-
-    d3.json('data/ts_1.geojson', function(error, mapData) {
-        var features = mapData.features;
-
-        color.domain([0, d3.max(features, nameLength)]);
-
-        mapLayer.selectAll('path')
-            .data(features)
-            .enter().append('path')
-            .attr('d', path)
-            .attr('vector-effect', 'non-scaling-stroke')
-            .style('fill', fillFn)
-            .on('mouseover', mouseover)
-            .on('mouseout', mouseout);
-
-            // Zoom buttons
-            svg.selectAll(".button")
-                .data(['zoom_in', 'zoom_out'])
-              .enter()
-                .append("g")
-                  .attr("id", function(d){return d})
-                  .attr("class", "button")
-                  .attr({x: 20, width: 20, height: 20})
-                .append("rect")
-                    .attr("y", function(d,i) { return 20 + 25*i })
-                    .attr({x: 20, width: 20, height: 20});
-
-            // Plus button
-            svg.select("#zoom_in")
-              .append("line")
-                .attr({x1: 25, y1: 30, x2: 35, y2: 30 })
-                .attr("stroke", "#fff")
-                .attr("stroke-width", "2px");
-
-            svg.select("#zoom_in")
-              .append("line")
-                .attr({x1: 30, y1: 25, x2: 30, y2: 35 })
-                .attr("stroke", "#fff")
-                .attr("stroke-width", "2px");
-            // Minus button
-
-            svg.select("#zoom_out")
-              .append("line")
-                .attr({x1: 25, y1: 55, x2: 35, y2: 55 })
-                .attr("stroke", "#fff")
-                .attr("stroke-width", "2px");
-
-            svg.selectAll(".button")
-              .on("click", function() {
-                  d3.event.preventDefault();
-
-                  var scale = zoom.scale(),
-                      extent = zoom.scaleExtent(),
-                      translate = zoom.translate(),
-                      x = translate[0], y = translate[1],
-                      factor = (this.id === 'zoom_in') ? 2 : 1/2,
-                      target_scale = scale * factor;
-
-                  var clamped_target_scale = Math.max(extent[0], Math.min(extent[1], target_scale));
-                    if (clamped_target_scale != target_scale){
-                        target_scale = clamped_target_scale;
-                        factor = target_scale / scale;
-                    }
-
-                    // Center each vector, stretch, then put back
-                    x = (x - center[0]) * factor + center[0];
-                    y = (y - center[1]) * factor + center[1];
-
-                    // Transition to the new view over 350ms
-                    d3.transition().duration(350).tween("zoom", function () {
-                        var interpolate_scale = d3.interpolate(scale, target_scale),
-                            interpolate_trans = d3.interpolate(translate, [x,y]);
-                        return function (t) {
-                            zoom.scale(interpolate_scale(t))
-                                .translate(interpolate_trans(t));
-                            svg.call(zoom.event);
-                        };
-                    });
-              });
-
-              svg.select("#progress-image").remove();
-            }
-    );
-
-    function mouseover(d) {
-        d3.select(this).style('fill', 'orange');
-        textArt(nameFn(d));
-    };
-
-    function mouseout(d) {
-        mapLayer.selectAll('path')
-            .style('fill', function(d) {
-                return centered && d === centered ? '#D5708B' : fillFn(d);
-            })
-        bigText.text('');
-    };
-
-    function textArt(text) {
-        bigText.text(text);
-    };
-
-    function nameFn(d) {
-        return d && d.properties ? d.properties.TS : null;
-    };
-
-    function nameLength(d) {
-        var n = nameFn(d);
-        return n ? n.length : 0;
-    };
-
-    function fillFn(d) {
-        return color(nameLength(d));
-    };
-
-
-    /*
-    var width = 960,
-    height = 500,
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script>
+var width = 1200,
+    height = 1200,
     centered;
 
-    // Define color scale
-    var color = d3.scale.linear()
-      .domain([1, 20])
-      .clamp(true)
-      .range(['#fff', '#409A99']);
+var color = d3.scale.linear()
+    .domain([1, 20])
+    .clamp(true)
+    .range(['#fff', '#409A99']);
 
-    var projection = d3.geo.mercator()
-      .scale(1500)
-      // Center the Map in Colombia
-      .center([-74, 4.5])
-      .translate([width / 2, height / 2]);
+var projection = d3.geo.mercator()
+    .scale(3000)
+    .center([96.7, 19.1])
+    .translate([width / 2, height / 2]);
 
-    var path = d3.geo.path()
-      .projection(projection);
+var path = d3.geo.path()
+    .projection(projection);
 
-    // Set svg width & height
-    var svg = d3.select('svg')
-      .attr('width', width)
-      .attr('height', height);
+var svg = d3.select('svg')
+    .attr('width', width)
+    .attr('height', height);
 
-    // Add background
-    svg.append('rect')
-      .attr('class', 'background')
-      .attr('width', width)
-      .attr('height', height)
-      .on('click', clicked);
+var g = svg.append('g');
 
-    var g = svg.append('g');
-
-    var effectLayer = g.append('g')
-    .classed('effect-layer', true);
-
-    var mapLayer = g.append('g')
+var mapLayer = g.append('g')
     .classed('map-layer', true);
 
-    var dummyText = g.append('text')
-    .classed('dummy-text', true)
-    .attr('x', 10)
-    .attr('y', 30)
-    .style('opacity', 0);
-
-    var bigText = g.append('text')
+var bigText = g.append('text')
     .classed('big-text', true)
-    .attr('x', 20)
-    .attr('y', 45);
+    .attr('x', 100)
+    .attr('y', 100);
 
-    // Load map data
-    d3.json('colombia.geojson', function(error, mapData) {
+d3.json('data/ts_1.geojson', function(error, mapData) {
     var features = mapData.features;
 
-    // Update color scale domain based on data
     color.domain([0, d3.max(features, nameLength)]);
 
-    // Draw each province as a path
     mapLayer.selectAll('path')
         .data(features)
-      .enter().append('path')
+        .enter().append('path')
         .attr('d', path)
         .attr('vector-effect', 'non-scaling-stroke')
         .style('fill', fillFn)
         .on('mouseover', mouseover)
-        .on('mouseout', mouseout)
-        .on('click', clicked);
-    });
+        .on('mouseout', mouseout);
 
-    // Get province name
-    function nameFn(d){
-      return d && d.properties ? d.properties.NOMBRE_DPT : null;
-    }
+        // Zoom buttons
+        svg.selectAll(".button")
+            .data(['zoom_in', 'zoom_out'])
+          .enter()
+            .append("g")
+              .attr("id", function(d){return d})
+              .attr("class", "button")
+              .attr({x: 20, width: 20, height: 20})
+            .append("rect")
+                .attr("y", function(d,i) { return 20 + 25*i })
+                .attr({x: 20, width: 20, height: 20});
 
-    // Get province name length
-    function nameLength(d){
-      var n = nameFn(d);
-      return n ? n.length : 0;
-    }
+        // Plus button
+        svg.select("#zoom_in")
+          .append("line")
+            .attr({x1: 25, y1: 30, x2: 35, y2: 30 })
+            .attr("stroke", "#fff")
+            .attr("stroke-width", "2px");
 
-    // Get province color
-    function fillFn(d){
-      return color(nameLength(d));
-    }
+        svg.select("#zoom_in")
+          .append("line")
+            .attr({x1: 30, y1: 25, x2: 30, y2: 35 })
+            .attr("stroke", "#fff")
+            .attr("stroke-width", "2px");
+        // Minus button
 
-    // When clicked, zoom in
-    function clicked(d) {
-      var x, y, k;
+        svg.select("#zoom_out")
+          .append("line")
+            .attr({x1: 25, y1: 55, x2: 35, y2: 55 })
+            .attr("stroke", "#fff")
+            .attr("stroke-width", "2px");
 
-      // Compute centroid of the selected path
-      if (d && centered !== d) {
-        var centroid = path.centroid(d);
-        x = centroid[0];
-        y = centroid[1];
-        k = 4;
-        centered = d;
-      } else {
-        x = width / 2;
-        y = height / 2;
-        k = 1;
-        centered = null;
-      }
+        svg.selectAll(".button")
+          .on("click", function() {
+              d3.event.preventDefault();
 
-      // Highlight the clicked province
-      mapLayer.selectAll('path')
-        .style('fill', function(d){return centered && d===centered ? '#D5708B' : fillFn(d);});
+              var scale = zoom.scale(),
+                  extent = zoom.scaleExtent(),
+                  translate = zoom.translate(),
+                  x = translate[0], y = translate[1],
+                  factor = (this.id === 'zoom_in') ? 2 : 1/2,
+                  target_scale = scale * factor;
 
-      // Zoom
-      g.transition()
-        .duration(750)
-        .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')scale(' + k + ')translate(' + -x + ',' + -y + ')');
-    }
+              var clamped_target_scale = Math.max(extent[0], Math.min(extent[1], target_scale));
+                if (clamped_target_scale != target_scale){
+                    target_scale = clamped_target_scale;
+                    factor = target_scale / scale;
+                }
 
-    function mouseover(d){
-      // Highlight hovered province
-      d3.select(this).style('fill', 'orange');
+                // Center each vector, stretch, then put back
+                x = (x - center[0]) * factor + center[0];
+                y = (y - center[1]) * factor + center[1];
 
-      // Draw effects
-      textArt(nameFn(d));
-    }
+                // Transition to the new view over 350ms
+                d3.transition().duration(350).tween("zoom", function () {
+                    var interpolate_scale = d3.interpolate(scale, target_scale),
+                        interpolate_trans = d3.interpolate(translate, [x,y]);
+                    return function (t) {
+                        zoom.scale(interpolate_scale(t))
+                            .translate(interpolate_trans(t));
+                        svg.call(zoom.event);
+                    };
+                });
+          });
 
-    function mouseout(d){
-      // Reset province color
-      mapLayer.selectAll('path')
-        .style('fill', function(d){return centered && d===centered ? '#D5708B' : fillFn(d);});
-
-      // Remove effect text
-      effectLayer.selectAll('text').transition()
-        .style('opacity', 0)
-        .remove();
-
-      // Clear province name
-      bigText.text('');
-    }
-
-    // Gimmick
-    // Just me playing around.
-    // You won't need this for a regular map.
-
-    var BASE_FONT = "'Helvetica Neue', Helvetica, Arial, sans-serif";
-
-    var FONTS = [
-      "Open Sans",
-      "Josefin Slab",
-      "Arvo",
-      "Lato",
-      "Vollkorn",
-      "Abril Fatface",
-      "Old StandardTT",
-      "Droid+Sans",
-      "Lobster",
-      "Inconsolata",
-      "Montserrat",
-      "Playfair Display",
-      "Karla",
-      "Alegreya",
-      "Libre Baskerville",
-      "Merriweather",
-      "Lora",
-      "Archivo Narrow",
-      "Neuton",
-      "Signika",
-      "Questrial",
-      "Fjalla One",
-      "Bitter",
-      "Varela Round"
-    ];
-
-    function textArt(text){
-      // Use random font
-      var fontIndex = Math.round(Math.random() * FONTS.length);
-      var fontFamily = FONTS[fontIndex] + ', ' + BASE_FONT;
-
-      bigText
-        .style('font-family', fontFamily)
-        .text(text);
-
-      // Use dummy text to compute actual width of the text
-      // getBBox() will return bounding box
-      dummyText
-        .style('font-family', fontFamily)
-        .text(text);
-      var bbox = dummyText.node().getBBox();
-
-      var textWidth = bbox.width;
-      var textHeight = bbox.height;
-      var xGap = 3;
-      var yGap = 1;
-
-      // Generate the positions of the text in the background
-      var xPtr = 0;
-      var yPtr = 0;
-      var positions = [];
-      var rowCount = 0;
-      while(yPtr < height){
-        while(xPtr < width){
-          var point = {
-            text: text,
-            index: positions.length,
-            x: xPtr,
-            y: yPtr
-          };
-          var dx = point.x - width/2 + textWidth/2;
-          var dy = point.y - height/2;
-          point.distance = dx*dx + dy*dy;
-
-          positions.push(point);
-          xPtr += textWidth + xGap;
+          svg.select("#progress-image").remove();
         }
-        rowCount++;
-        xPtr = rowCount%2===0 ? 0 : -textWidth/2;
-        xPtr += Math.random() * 10;
-        yPtr += textHeight + yGap;
-      }
+);
 
-      var selection = effectLayer.selectAll('text')
-        .data(positions, function(d){return d.text+'/'+d.index;});
+function mouseover(d) {
+    d3.select(this).style('fill', 'orange');
+    textArt(nameFn(d));
+};
 
-      // Clear old ones
-      selection.exit().transition()
-        .style('opacity', 0)
-        .remove();
-
-      // Create text but set opacity to 0
-      selection.enter().append('text')
-        .text(function(d){return d.text;})
-        .attr('x', function(d){return d.x;})
-        .attr('y', function(d){return d.y;})
-        .style('font-family', fontFamily)
-        .style('fill', '#777')
-        .style('opacity', 0);
-
-      selection
-        .style('font-family', fontFamily)
-        .attr('x', function(d){return d.x;})
-        .attr('y', function(d){return d.y;});
-
-      // Create transtion to increase opacity from 0 to 0.1-0.5
-      // Add delay based on distance from the center of the <svg> and a bit more randomness.
-      selection.transition()
-        .delay(function(d){
-          return d.distance * 0.01 + Math.random()*1000;
+function mouseout(d) {
+    mapLayer.selectAll('path')
+        .style('fill', function(d) {
+            return centered && d === centered ? '#D5708B' : fillFn(d);
         })
-        .style('opacity', function(d){
-          return 0.1 + Math.random()*0.4;
-        });
+    bigText.text('');
+};
+
+function textArt(text) {
+    bigText.text(text);
+};
+
+function nameFn(d) {
+    return d && d.properties ? d.properties.TS : null;
+};
+
+function nameLength(d) {
+    var n = nameFn(d);
+    return n ? n.length : 0;
+};
+
+function fillFn(d) {
+    return color(nameLength(d));
+};
+
+
+/*
+var width = 960,
+height = 500,
+centered;
+
+// Define color scale
+var color = d3.scale.linear()
+  .domain([1, 20])
+  .clamp(true)
+  .range(['#fff', '#409A99']);
+
+var projection = d3.geo.mercator()
+  .scale(1500)
+  // Center the Map in Colombia
+  .center([-74, 4.5])
+  .translate([width / 2, height / 2]);
+
+var path = d3.geo.path()
+  .projection(projection);
+
+// Set svg width & height
+var svg = d3.select('svg')
+  .attr('width', width)
+  .attr('height', height);
+
+// Add background
+svg.append('rect')
+  .attr('class', 'background')
+  .attr('width', width)
+  .attr('height', height)
+  .on('click', clicked);
+
+var g = svg.append('g');
+
+var effectLayer = g.append('g')
+.classed('effect-layer', true);
+
+var mapLayer = g.append('g')
+.classed('map-layer', true);
+
+var dummyText = g.append('text')
+.classed('dummy-text', true)
+.attr('x', 10)
+.attr('y', 30)
+.style('opacity', 0);
+
+var bigText = g.append('text')
+.classed('big-text', true)
+.attr('x', 20)
+.attr('y', 45);
+
+// Load map data
+d3.json('colombia.geojson', function(error, mapData) {
+var features = mapData.features;
+
+// Update color scale domain based on data
+color.domain([0, d3.max(features, nameLength)]);
+
+// Draw each province as a path
+mapLayer.selectAll('path')
+    .data(features)
+  .enter().append('path')
+    .attr('d', path)
+    .attr('vector-effect', 'non-scaling-stroke')
+    .style('fill', fillFn)
+    .on('mouseover', mouseover)
+    .on('mouseout', mouseout)
+    .on('click', clicked);
+});
+
+// Get province name
+function nameFn(d){
+  return d && d.properties ? d.properties.NOMBRE_DPT : null;
+}
+
+// Get province name length
+function nameLength(d){
+  var n = nameFn(d);
+  return n ? n.length : 0;
+}
+
+// Get province color
+function fillFn(d){
+  return color(nameLength(d));
+}
+
+// When clicked, zoom in
+function clicked(d) {
+  var x, y, k;
+
+  // Compute centroid of the selected path
+  if (d && centered !== d) {
+    var centroid = path.centroid(d);
+    x = centroid[0];
+    y = centroid[1];
+    k = 4;
+    centered = d;
+  } else {
+    x = width / 2;
+    y = height / 2;
+    k = 1;
+    centered = null;
+  }
+
+  // Highlight the clicked province
+  mapLayer.selectAll('path')
+    .style('fill', function(d){return centered && d===centered ? '#D5708B' : fillFn(d);});
+
+  // Zoom
+  g.transition()
+    .duration(750)
+    .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')scale(' + k + ')translate(' + -x + ',' + -y + ')');
+}
+
+function mouseover(d){
+  // Highlight hovered province
+  d3.select(this).style('fill', 'orange');
+
+  // Draw effects
+  textArt(nameFn(d));
+}
+
+function mouseout(d){
+  // Reset province color
+  mapLayer.selectAll('path')
+    .style('fill', function(d){return centered && d===centered ? '#D5708B' : fillFn(d);});
+
+  // Remove effect text
+  effectLayer.selectAll('text').transition()
+    .style('opacity', 0)
+    .remove();
+
+  // Clear province name
+  bigText.text('');
+}
+
+// Gimmick
+// Just me playing around.
+// You won't need this for a regular map.
+
+var BASE_FONT = "'Helvetica Neue', Helvetica, Arial, sans-serif";
+
+var FONTS = [
+  "Open Sans",
+  "Josefin Slab",
+  "Arvo",
+  "Lato",
+  "Vollkorn",
+  "Abril Fatface",
+  "Old StandardTT",
+  "Droid+Sans",
+  "Lobster",
+  "Inconsolata",
+  "Montserrat",
+  "Playfair Display",
+  "Karla",
+  "Alegreya",
+  "Libre Baskerville",
+  "Merriweather",
+  "Lora",
+  "Archivo Narrow",
+  "Neuton",
+  "Signika",
+  "Questrial",
+  "Fjalla One",
+  "Bitter",
+  "Varela Round"
+];
+
+function textArt(text){
+  // Use random font
+  var fontIndex = Math.round(Math.random() * FONTS.length);
+  var fontFamily = FONTS[fontIndex] + ', ' + BASE_FONT;
+
+  bigText
+    .style('font-family', fontFamily)
+    .text(text);
+
+  // Use dummy text to compute actual width of the text
+  // getBBox() will return bounding box
+  dummyText
+    .style('font-family', fontFamily)
+    .text(text);
+  var bbox = dummyText.node().getBBox();
+
+  var textWidth = bbox.width;
+  var textHeight = bbox.height;
+  var xGap = 3;
+  var yGap = 1;
+
+  // Generate the positions of the text in the background
+  var xPtr = 0;
+  var yPtr = 0;
+  var positions = [];
+  var rowCount = 0;
+  while(yPtr < height){
+    while(xPtr < width){
+      var point = {
+        text: text,
+        index: positions.length,
+        x: xPtr,
+        y: yPtr
+      };
+      var dx = point.x - width/2 + textWidth/2;
+      var dy = point.y - height/2;
+      point.distance = dx*dx + dy*dy;
+
+      positions.push(point);
+      xPtr += textWidth + xGap;
     }
-    */
-    </script>
+    rowCount++;
+    xPtr = rowCount%2===0 ? 0 : -textWidth/2;
+    xPtr += Math.random() * 10;
+    yPtr += textHeight + yGap;
+  }
+
+  var selection = effectLayer.selectAll('text')
+    .data(positions, function(d){return d.text+'/'+d.index;});
+
+  // Clear old ones
+  selection.exit().transition()
+    .style('opacity', 0)
+    .remove();
+
+  // Create text but set opacity to 0
+  selection.enter().append('text')
+    .text(function(d){return d.text;})
+    .attr('x', function(d){return d.x;})
+    .attr('y', function(d){return d.y;})
+    .style('font-family', fontFamily)
+    .style('fill', '#777')
+    .style('opacity', 0);
+
+  selection
+    .style('font-family', fontFamily)
+    .attr('x', function(d){return d.x;})
+    .attr('y', function(d){return d.y;});
+
+  // Create transtion to increase opacity from 0 to 0.1-0.5
+  // Add delay based on distance from the center of the <svg> and a bit more randomness.
+  selection.transition()
+    .delay(function(d){
+      return d.distance * 0.01 + Math.random()*1000;
+    })
+    .style('opacity', function(d){
+      return 0.1 + Math.random()*0.4;
+    });
+}
+*/
+</script>
 </body>
 </html>
