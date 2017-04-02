@@ -47,7 +47,7 @@ svg {
 
     <h3>
         Population:
-        <span id="poptextmin">285</span> &mdash; <span id="poptextmax">148711</span>
+        <span id="poptextmin">2850</span> &mdash; <span id="poptextmax">1487110</span>
     </h3>
     <div id="pop"></div>
 
@@ -151,8 +151,8 @@ svg {
 <script>
 
 // slider values
-var POP_MIN = 285;
-var POP_MAX = 148711;
+var POP_MIN = 2850;
+var POP_MAX = 1487110;
 var ELEC_MIN = 0;
 var ELEC_MAX = 100.0;
 var YOUNG_MIN = 56.3;
@@ -362,7 +362,7 @@ function draw(error, mapData) {
               // update
               tooltip.select(".name").text(d.properties.TS);
               // tooltip metric values
-              tooltip.select(".HC01_EST_VC04_val.val").text((d.properties.Total).toFixed(0))
+              tooltip.select(".HC01_EST_VC04_val.val").text((d.properties.Total*10).toFixed(0))
               tooltip.select(".HC01_EST_VC05_val.val").text((d.properties.Prop_Electricity*100).toFixed(1) + "%")
               tooltip.select(".HC01_EST_VC10_val.val").text((d.properties.age_above_15*100).toFixed(1) + "%")
               tooltip.select(".HC01_EST_VC11_val.val").text((100-d.properties.below_medium_education*100).toFixed(1) + "%")
@@ -382,7 +382,7 @@ function zoomed() {
 };
 
 function townshipDisplay(d) {
-    pop = d.properties.Total
+    pop = d.properties.Total*10
     elec = d.properties.Prop_Electricity*100
     age = d.properties.age_above_15*100
     edu = (100-d.properties.below_medium_education*100)
