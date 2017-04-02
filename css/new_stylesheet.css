@@ -1,52 +1,26 @@
-/* Normalize */
-body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, form, fieldset, input, p, blockquote, th, td, legend {
-	margin: 0;
-	padding: 0;
+#toolbar {
+  margin-top: 20px;
+	float:left;
 }
-h1,h2,h3,h4,h5,h6 { font-family: Arial, Helvetica, sans-serif; font-weight: bold; font-size: 100%; }
-address, caption, cite, code, dfn, th, var { font-style: normal; font-weight: normal; }
-table { border-collapse: collapse; border-spacing: 0; }
-fieldset,img { border: 0; }
-caption,th { text-align: left; }
-/* @end */
 
+#main-wrapper {
+    width: 960px;
+    margin: 0 auto;
+		font-family: 'Inconsolata', Monaco, "Lucida Console", Consolas, "Courier New";
+}
 
-#metrics { width: 920px; margin: 0 auto 15px 0; font-family: Helvetica, sans-serif; }
-#metrics #instruct {
-    text-align: left;
-    margin-bottom: 10px;
-    margin-right: 20px;
-    float: left;
-    width: 210px;
-    font-size: 14px;
-    line-height: 1.4em;
-    font-family: Georgia, serif;
+path.highlight {
+	fill: #f1e12b;
+	color: #f1e12b;
 }
-#metrics h3 { font-size: 13px; font-family: Helvetica, sans-serif; text-align: center; margin-bottom: 0; }
-#metrics ul { font-size: 12px; font-family: Helvetica, sans-serif; margin-left: 0; padding: 0; }
-#metrics ul li {
-    list-style: none;
-    margin: 10px 10px 0 0;
-    padding: 4px 0;
-    display: inline-block;
-    width: 108px;
-    /*background: #e0e0e0;*/
-    cursor: pointer;
-    text-align: center;
-    font-size: 11px;
-    border: 1px solid #e0e0e0;
-}
-#metrics ul li.bottom { margin-bottom: 0; }
-#metrics #motor { width: 250px; float: left; border-right: 1px solid #ccc; margin-right: 15px; }
-#metrics #non-motor { width: 250px; float: left; padding-left: 5px;  }
-#metrics .block-button { width: 80px; display: block; float:left; clear:both; }
+
 div.tooltip {
     position: absolute;
     text-align: left;
     width: 170px;
     padding: 10px;
     font-size: 10px;
-    font-family: Helvetica, sans-serif;
+    font-family: 'Inconsolata', Monaco, "Lucida Console", Consolas, "Courier New";
     background: #ffffff;
     pointer-events: none;
     opacity: 0;
