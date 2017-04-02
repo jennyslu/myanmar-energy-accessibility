@@ -360,7 +360,7 @@ function draw(error, mapData) {
                  tooltip.style("top", (d3.event.pageY -30) + "px");
               }
               // update
-              tooltip.select(".name").text(d.properties.TS);
+              tooltip.select(".name").text(d.properties.ST + " > " + d.properties.DT + " > " + d.properties.TS);
               // tooltip metric values
               tooltip.select(".HC01_EST_VC04_val.val").text((d.properties.Total*10).toFixed(0))
               tooltip.select(".HC01_EST_VC05_val.val").text((d.properties.Prop_Electricity*100).toFixed(1) + "%")
