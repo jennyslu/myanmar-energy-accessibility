@@ -28,28 +28,42 @@
 </h3>
 <div id="elec"></div>
 
+<h2>People</h2>
+
+<h3>
+  15 &ndash; 64:
+  <span id="youngtextmin">10.0</span>% &mdash; <span id="youngtextmax">40.0</span>%
+</h3>
+<div id="young"></div>
+
+<h3>
+  Mid+ education:
+  <span id="edutextmin">10.0</span>% &mdash; <span id="edutextmax">40.0</span>%
+</h3>
+<div id="edu"></div>
+
 </div>
 
 <!-- tooltip -->
 <div id="tooltip" class="tooltip">
     <h3 class="name"></h3>
     <div data-metric="HC01_EST_VC04" class="line">
-        <div class="HC01_EST_VC04 symbol"></div> Electricity
+        <div class="HC01_EST_VC04 symbol"></div> Population
         <div class="HC01_EST_VC04_val moe"></div>
         <div class="HC01_EST_VC04_val val"></div>
     </div>
     <div data-metric="HC01_EST_VC05" class="line">
-        <div class="HC01_EST_VC05 symbol"></div> Kerosene
+        <div class="HC01_EST_VC05 symbol"></div> Electrification
         <div class="HC01_EST_VC05_val moe"></div>
         <div class="HC01_EST_VC05_val val"></div>
     </div>
     <div data-metric="HC01_EST_VC10" class="line">
-        <div class="HC01_EST_VC10 symbol"></div> Candle
+        <div class="HC01_EST_VC10 symbol"></div> 15 &ndash; 64
         <div class="HC01_EST_VC10_val moe"></div>
         <div class="HC01_EST_VC10_val val"></div>
     </div>
     <div data-metric="HC01_EST_VC11" class="line">
-        <div class="HC01_EST_VC11 symbol"></div> Battery
+        <div class="HC01_EST_VC11 symbol"></div> Mid+ education
         <div class="HC01_EST_VC11_val moe"></div>
         <div class="HC01_EST_VC11_val val"></div>
     </div>
@@ -195,10 +209,10 @@ function draw(error, mapData) {
                  tooltip.style("top", (d3.event.pageY -30) + "px");
               }
               // update
-              tooltip.select(".name").text(d.properties.TS + " | Population: " + d.properties.Total);
+              tooltip.select(".name").text(d.properties.TS);
               // tooltip metric values
-              tooltip.select(".HC01_EST_VC04_val.val").text((d.properties.Prop_Electricity*100).toFixed(1) + "%")
-              tooltip.select(".HC01_EST_VC05_val.val").text((d.properties.Prop_Kerosene*100).toFixed(1) + "%")
+              tooltip.select(".HC01_EST_VC04_val.val").text((d.properties.Total*100).toFixed(0))
+              tooltip.select(".HC01_EST_VC05_val.val").text((d.properties.Prop_Electricity*100).toFixed(1) + "%")
               tooltip.select(".HC01_EST_VC10_val.val").text((d.properties.Prop_Candle*100).toFixed(1) + "%")
               tooltip.select(".HC01_EST_VC11_val.val").text((d.properties.Prop_Battery*100).toFixed(1) + "%")
               tooltip.select(".HC01_EST_VC12_val.val").text((d.properties.Prop_Generator_Private*100).toFixed(1) + "%")
