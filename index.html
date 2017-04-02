@@ -87,7 +87,7 @@ svg {
 
     <h3>
         Solar:
-        <span id="solartextmin">0.0</span>% &mdash; <span id="solartextmax">61.2</span>%
+        <span id="solartextmin">0.0</span>% &mdash; <span id="solartextmax">70.7</span>%
     </h3>
     <div id="solar"></div>
 
@@ -164,7 +164,7 @@ var DEP_MAX = 94;
 var CELL_MIN = 0;
 var CELL_MAX = 95.4;
 var SOLAR_MIN = 0;
-var SOLAR_MAX = 61.2;
+var SOLAR_MAX = 70.7;
 
 // frame
 var width = 600,
@@ -368,7 +368,7 @@ function draw(error, mapData) {
               tooltip.select(".HC01_EST_VC11_val.val").text((100-d.properties.below_medium_education*100).toFixed(1) + "%")
               tooltip.select(".HC01_EST_VC12_val.val").text((d.properties.total_dep_ratio*100).toFixed(1) + "%")
               tooltip.select(".HC01_EST_VC13_val.val").text((d.properties.has_mobile_conv*100).toFixed(1) + "%")
-              tooltip.select(".HC01_EST_VC14_val.val").text(((d.properties.Prop_Solar_System_Energy + d.properties.Prop_Other)*100).toFixed(1) + "%")
+              tooltip.select(".HC01_EST_VC14_val.val").text(((d.properties.Prop_Solar_System_Energy)*100).toFixed(1) + "%")
         })
         .on("mouseout", function() {
             d3.select(this).classed("selected", false); // remove "selected" class
@@ -388,7 +388,7 @@ function townshipDisplay(d) {
     edu = (100-d.properties.below_medium_education*100)
     dep = d.properties.total_dep_ratio*100
     cell = d.properties.has_mobile_conv*100
-    sun = (d.properties.Prop_Solar_System_Energy + d.properties.Prop_Other)*100
+    sun = (d.properties.Prop_Solar_System_Energy)*100
 
     show = (pop <= POP_MAX && pop >= POP_MIN &&
             elec <= ELEC_MAX && elec >= ELEC_MIN &&
