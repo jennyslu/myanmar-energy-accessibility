@@ -1,34 +1,29 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 <title>Myanmar Energy Accesibiility</title>
-<link rel="stylesheet" href="style.css" type="text/css" media="screen" />
-<style type='text/css'>
-.background {
-    fill: #eee;
-    pointer-events: all;
-}
-
-.map-layer {
-    fill: #fff;
-    stroke: #aaa;
-}
-
-text{
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    font-weight: 300;
-}
-
-text.big-text {
-    font-size: 30px;
-    font-weight: 400;
-}
-</style>
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/d3.slider.css" type="text/css" media="screen" />
+<link href='https://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
 </head>
+
 <body>
 <div id="main-wrapper">
-<svg></svg>
 
+<!-- side bar -->
+<div id="toolbar">
+
+<h3>
+  Electrification:
+  <span id="slider3textmin">10</span>,
+  <span id="slider3textmax">25</span>
+</h3>
+<div id="slider3"></div>
+
+</div>
+
+<!-- tooltip -->
 <div id="tooltip" class="tooltip">
     <h3 class="name"></h3>
     <div data-metric="HC01_EST_VC04" class="line">
@@ -68,132 +63,172 @@ text.big-text {
     </div>
 </div>
 
+<!-- map -->
+<svg></svg>
+
 </div><!-- @end #main-wrapper -->
 
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="http://d3js.org/queue.v1.min.js"></script>
-<script src="http://d3js.org/topojson.v1.min.js"></script>
+<script src="js/d3.slider.js"></script>
+
 <script>
 
-var width = 1200,
-    height = 1200,
-    centered;
+// User-set hours with slider
+var ELEC_MIN = 10;
+var ELEC_MAX = 40;
 
-var color = d3.scale.linear()
-    .domain([1, 100])
-    .clamp(true)
-    .range(['#fff', '#409A99']);
+// frame
+var width = 960,
+    height = 1400,
+    center = [width / 2, height / 2],
+    defaultFill = "#e0e0e0";
 
+// chained projection function
 var projection = d3.geo.mercator()
     .scale(3000)
-    .center([96.7, 19.1])
+    .center([96.7, 17.3])
     .translate([width / 2, height / 2]);
-
+// chained path function
 var path = d3.geo.path()
     .projection(projection);
-
+// chained zoom function
 var zoom = d3.behavior.zoom()
     .scaleExtent([1, 30])
-    .on('zoom', zoomed);
+    .on("zoom", zoomed);
 
-var svg = d3.select('svg')
-    .attr('width', width)
-    .attr('height', height);
+// color scale
+var color = d3.scale.linear()
+    .domain([0,100])
+    .range(["#ffffff", "#8dd3c7"])
+    .interpolate(d3.interpolateLab);
 
-var g = svg.append('g');
+// Slider
+var propSlider = d3.slider()
+  .axis(true)
+  .value( [ 10, 25 ] )
+  .on("slide", brushed);
 
-svg.call(zoom)
-    .call(zoom.event);
 
-var mapLayer = g.append('g')
-    .classed('map-layer', true);
+// main SVG
+var svg = d3.select("svg")
+    .attr("width", width)
+    .attr("height", height);
+// appends SVG group to SVG and returns reference to self (this is zoom window)
+var g = svg.append("g");
+// append another SVG group and returns reference to self (this is actual map)
+var mapLayer = g.append("g")
+    .classed("map-layer", true);
+// select tooltip div and make invisible
+var tooltip = d3.select("#tooltip")
+ .attr("class", "tooltip")
+ .style("opacity", 0);
 
-var bigText = g.append('text')
-    .classed('big-text', true)
-    .attr('x', 100)
-    .attr('y', 100);
+// call previously defined zoom function on elements of g
+svg.call(zoom).call(zoom.event);
+
+// load data with draw callback function - a function that fires when an event happens, i.e. data loaded
+d3.json("data/ts_2.geojson", draw);
+
+// function to first draw map
+function draw(error, mapData) {
+    if (error) throw error;
+
+    // all data is stored in "features" key of geojson
+    // feature is a list of JSONs that each represent a township
+    var features = mapData.features;
+    // color.domain([0, d3.max(features, popFn)]);
+
+    // TOOL BAR SLIDERS
+    d3.select("#slider3").call(propSlider);
+
+    /*
+    d3.select("#electrifactionslider")
+      .call(d3.slider()
+      .axis(true).value( [ 10, 25 ] )
+      .on("slide", function(evt, value) {
+          d3.select("#electrificationtxtmin").text(value[ 0 ].toFixed(1));
+          d3.select("#electrificationtxtmax").text(value[ 1 ].toFixed(1));
+        }));*/
+
+    // bind to paths
+    // recall mapLayer is <g> within bigger <g>
+    // need to use selectAll because have dataset
+    mapLayer.selectAll("path") // returns empty selection as no paths exist yet
+        .data(features) // selection.data() binds data to DOM elements
+        .enter() // enter to create new, data-bound placeholder elements
+        .append("path") // insert path elements where placeholders are
+        .attr("id", function(d){return d.properties.TS_PCODE}) // set id attribute as township pcode
+        .attr("d", path) //set path description to path returned by area
+        .attr("vector-effect", "non-scaling-stroke") // stroke attribute
+        .style("fill", "#AAAAAA") // fill with grey
+        .style("opacity", 0.7) // lighter opacity
+        .style("stroke","#fff" ) // white borders
+        .on("mouseover", function(d) {
+              d3.select(this).classed("selected", true); // add "selected" class
+              tooltip.transition().duration(100).style("opacity", 1) // tooltip become visible
+              // bunch of code to move orientation of tooltip depending on position
+              if (d3.event.pageX > (width - 200)) {
+                 tooltip.style("left", (d3.event.pageX - 210) + "px");
+              } else {
+                 tooltip.style("left", (d3.event.pageX + 20) + "px")
+                      .style("top", (d3.event.pageY -30) + "px");
+              }
+              if (d3.event.pageY > (height - 150)) {
+                 tooltip.style("top", (d3.event.pageY -140) + "px");
+              } else {
+                 tooltip.style("top", (d3.event.pageY -30) + "px");
+              }
+              // update
+              tooltip.select(".name").text(d.properties.TS + " | Population: " + d.properties.Total);
+              // tooltip metric values
+              tooltip.select(".HC01_EST_VC04_val.val").text((d.properties.Prop_Electricity*100).toFixed(1) + "%")
+              tooltip.select(".HC01_EST_VC05_val.val").text((d.properties.Prop_Kerosene*100).toFixed(1) + "%")
+              tooltip.select(".HC01_EST_VC10_val.val").text((d.properties.Prop_Candle*100).toFixed(1) + "%")
+              tooltip.select(".HC01_EST_VC11_val.val").text((d.properties.Prop_Battery*100).toFixed(1) + "%")
+              tooltip.select(".HC01_EST_VC12_val.val").text((d.properties.Prop_Generator_Private*100).toFixed(1) + "%")
+              tooltip.select(".HC01_EST_VC13_val.val").text((d.properties.Prop_Water_Mill_Private*100).toFixed(1) + "%")
+              tooltip.select(".HC01_EST_VC14_val.val").text(((d.properties.Prop_Solar_System_Energy + d.properties.Prop_Other)*100).toFixed(1) + "%")
+        })
+        .on("mouseout", function() {
+            d3.select(this).classed("selected", false); // remove "selected" class
+            tooltip.transition().duration(300).style("opacity", 0); // tooltip invisible again
+            });
+}
 
 function zoomed() {
     g.attr("transform",
         "translate(" + zoom.translate() + ")" + "scale(" + zoom.scale() + ")");
 };
 
-d3.json('data/ts_2.geojson', function(error, mapData) {
-    var tooltip = d3.select("#tooltip")
-     .attr("class", "tooltip")
-     .style("opacity", 0);
+// Update user settings when slider brushed, then update
+function brushed(evt, value) {
+  d3.select('#slider3textmin').text(value[0]);
+  d3.select('#slider3textmax').text(value[1]);
+  ELEC_MIN = value[0]
+  ELEC_MAX = value[1]
+  update();
+}
 
-    var features = mapData.features;
+// Update the bar chart
+function update() {
+    // Highlight appropriate bars
+    mapLayer.selectAll("path").call(highlightAreas);
+}
 
-    color.domain([0, d3.max(features, popFn)]);
+// Highlight the bars that are less than or equal to user-defined duration
+function highlightAreas(townships) {
+	// curr_total = 0;
+    townships.classed("highlight", function(d,i) {
+        if (d.properties.Prop_Electricity <= ELEC_MAX && d.properties.Prop_Electricity >= ELEC_MIN) {
+            return true;
+        } else {
+            return false;
+        }
+    });
+}
 
-    mapLayer.selectAll('path')
-        .data(features)
-        .enter()
-        .append('path')
-        .attr('d', path)
-        .attr('vector-effect', 'non-scaling-stroke')
-        .style('fill', fillFn)
-        .on("mouseover", function(d) {
-             d3.select(this).classed("selected", true);
-             tooltip.transition().duration(100)
-               .style("opacity", 1)
-             if (d3.event.pageX > (width - 200)) {
-                 tooltip.style("left", (d3.event.pageX - 210) + "px");
-             } else {
-                 tooltip.style("left", (d3.event.pageX + 20) + "px")
-                      .style("top", (d3.event.pageY -30) + "px");
-             }
-             if (d3.event.pageY > (height - 150)) {
-                 tooltip.style("top", (d3.event.pageY -140) + "px");
-             } else {
-                 tooltip.style("top", (d3.event.pageY -30) + "px");
-             }
-
-             tooltip.select(".name").text(d.properties.TS + " - Pop: " + d.properties.Total);
-
-             tooltip.select(".HC01_EST_VC04_val.val").text((d.properties.Prop_Electricity*100).toFixed(1) + "%")
-             tooltip.select(".HC01_EST_VC05_val.val").text((d.properties.Prop_Kerosene*100).toFixed(1) + "%")
-             tooltip.select(".HC01_EST_VC10_val.val").text((d.properties.Prop_Candle*100).toFixed(1) + "%")
-             tooltip.select(".HC01_EST_VC11_val.val").text((d.properties.Prop_Battery*100).toFixed(1) + "%")
-             tooltip.select(".HC01_EST_VC12_val.val").text((d.properties.Prop_Generator_Private*100).toFixed(1) + "%")
-             tooltip.select(".HC01_EST_VC13_val.val").text((d.properties.Prop_Water_Mill_Private*100).toFixed(1) + "%")
-             tooltip.select(".HC01_EST_VC14_val.val").text(((d.properties.Prop_Solar_System_Energy + d.properties.Prop_Other)*100).toFixed(1) + "%")
-           })
-        .on("mouseout", function() {
-            d3.select(this).classed("selected", false);
-            tooltip.transition().duration(300)
-              .style("opacity", 0);
-            });
-
-});
-
-function mouseover(d) {
-    textArt(nameFn(d));
-};
-
-function mouseout(d) {
-    d3.select(this).classed("selected", false);
-    tooltip.transition().duration(300)
-        .style("opacity", 0);
-};
-
-function textArt(text) {
-    bigText.text(text);
-};
-
-function nameFn(d) {
-    return d && d.properties ? d.properties.TS : null;
-};
-
-function popFn(d) {
-    return d && d.properties ? d.properties.Total : 0;
-};
-
-function fillFn(d) {
-    return color(popFn(d));
-};
-
+// NOT USED ANYMORE?
 function zoomClick() {
     var clicked = d3.event.target,
         direction = 1,
@@ -207,7 +242,7 @@ function zoomClick() {
         view = {x: translate[0], y: translate[1], k: zoom.scale()};
 
     d3.event.preventDefault();
-    direction = (this.id === 'zoom_in') ? 1 : -1;
+    direction = (this.id === "zoom_in") ? 1 : -1;
     target_zoom = zoom.scale() * (1 + factor * direction);
 
     if (target_zoom < extent[0] || target_zoom > extent[1]) { return false; }
