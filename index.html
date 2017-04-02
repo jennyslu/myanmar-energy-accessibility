@@ -53,7 +53,7 @@ svg {
 
     <h3>
         Electrification:
-        <span id="electextmin">0.0</span>% &mdash; <span id="electextmax">50.1</span>%
+        <span id="electextmin">0.0</span>% &mdash; <span id="electextmax">100.0</span>%
     </h3>
     <div id="elec"></div>
 
@@ -154,7 +154,7 @@ svg {
 var POP_MIN = 285;
 var POP_MAX = 148711;
 var ELEC_MIN = 0;
-var ELEC_MAX = 50.1;
+var ELEC_MAX = 100.0;
 var YOUNG_MIN = 56.3;
 var YOUNG_MAX = 89.1;
 var EDU_MIN = 0;
@@ -362,7 +362,7 @@ function draw(error, mapData) {
               // update
               tooltip.select(".name").text(d.properties.TS);
               // tooltip metric values
-              tooltip.select(".HC01_EST_VC04_val.val").text((d.properties.Total*100).toFixed(0))
+              tooltip.select(".HC01_EST_VC04_val.val").text((d.properties.Total).toFixed(0))
               tooltip.select(".HC01_EST_VC05_val.val").text((d.properties.Prop_Electricity*100).toFixed(1) + "%")
               tooltip.select(".HC01_EST_VC10_val.val").text((d.properties.age_above_15*100).toFixed(1) + "%")
               tooltip.select(".HC01_EST_VC11_val.val").text((100-d.properties.below_medium_education*100).toFixed(1) + "%")
@@ -381,23 +381,24 @@ function zoomed() {
         "translate(" + zoom.translate() + ")" + "scale(" + zoom.scale() + ")");
 };
 
-// Update user settings when slider brushed, then update
-function elecBrushed(evt, value) {
-  d3.select('#electextmin').text(value[0].toFixed(1));
-  d3.select('#electextmax').text(value[1].toFixed(1));
-  ELEC_MIN = value[0]
-  ELEC_MAX = value[1]
-  // Highlight appropriate bars
-  mapLayer.selectAll("path")
-    .classed("highlight", function(d){
-        ts_var = d.properties.Prop_Electricity*100
-        if (ts_var <= ELEC_MAX && ts_var >= ELEC_MIN) {
-            // console.log('SHOULD HAVE UPDATED: ' + d.properties.TS_PCODE)
-            return true;
-        } else {
-            return false;
-        }
-    });
+function townshipDisplay(d) {
+    pop = d.properties.Total
+    elec = d.properties.Prop_Electricity*100
+    age = d.properties.age_above_15*100
+    edu = (100-d.properties.below_medium_education*100)
+    dep = d.properties.total_dep_ratio*100
+    cell = d.properties.has_mobile_conv*100
+    sun = (d.properties.Prop_Solar_System_Energy + d.properties.Prop_Other)*100
+
+    show = (pop <= POP_MAX && pop >= POP_MIN &&
+            elec <= ELEC_MAX && elec >= ELEC_MIN &&
+            age <= YOUNG_MAX && age >= YOUNG_MIN &&
+            edu <= EDU_MAX && edu >= EDU_MIN &&
+            dep <= DEP_MAX && dep >= DEP_MIN &&
+            cell <= CELL_MAX && cell >= CELL_MIN &&
+            sun <= SOLAR_MAX && sun >= SOLAR_MIN)
+
+    return show
 }
 
 function popBrushed(evt, value) {
@@ -408,8 +409,26 @@ function popBrushed(evt, value) {
   // Highlight appropriate bars
   mapLayer.selectAll("path")
     .classed("highlight", function(d){
-        ts_var = d.properties.Total*100
+        ts_var = d.properties.Total
         if (ts_var <= POP_MAX && ts_var >= POP_MIN) {
+            return true;
+        } else {
+            return false;
+        }
+    });
+}
+
+// Update user settings when slider brushed, then update
+function elecBrushed(evt, value) {
+  d3.select('#electextmin').text(value[0].toFixed(1));
+  d3.select('#electextmax').text(value[1].toFixed(1));
+  ELEC_MIN = value[0]
+  ELEC_MAX = value[1]
+  // Highlight appropriate townships
+  mapLayer.selectAll("path")
+    .classed("highlight", function(d){
+        ts_var = d.properties.Prop_Electricity*100
+        if (ts_var <= ELEC_MAX && ts_var >= ELEC_MIN) {
             // console.log('SHOULD HAVE UPDATED: ' + d.properties.TS_PCODE)
             return true;
         } else {
@@ -428,7 +447,6 @@ function youngBrushed(evt, value) {
     .classed("highlight", function(d){
         ts_var = d.properties.age_above_15*100
         if (ts_var <= YOUNG_MAX && ts_var >= YOUNG_MIN) {
-            // console.log('SHOULD HAVE UPDATED: ' + d.properties.TS_PCODE)
             return true;
         } else {
             return false;
@@ -446,7 +464,6 @@ function eduBrushed(evt, value) {
     .classed("highlight", function(d){
         ts_var = (100-d.properties.below_medium_education*100)
         if (ts_var <= EDU_MAX && ts_var >= EDU_MIN) {
-            // console.log('SHOULD HAVE UPDATED: ' + d.properties.TS_PCODE)
             return true;
         } else {
             return false;
@@ -464,7 +481,6 @@ function depBrushed(evt, value) {
         .classed("highlight", function(d){
             ts_var = d.properties.total_dep_ratio*100
             if (ts_var <= DEP_MAX && ts_var >= DEP_MIN) {
-                // console.log('SHOULD HAVE UPDATED: ' + d.properties.TS_PCODE)
                 return true;
             } else {
                 return false;
@@ -482,7 +498,6 @@ function cellBrushed(evt, value) {
         .classed("highlight", function(d){
             ts_var = d.properties.has_mobile_conv*100
             if (ts_var <= CELL_MAX && ts_var >= CELL_MIN) {
-                // console.log('SHOULD HAVE UPDATED: ' + d.properties.TS_PCODE)
                 return true;
             } else {
                 return false;
@@ -500,7 +515,6 @@ function solarBrushed(evt, value) {
         .classed("highlight", function(d){
             ts_var = (d.properties.Prop_Solar_System_Energy + d.properties.Prop_Other)*100
             if (ts_var <= SOLAR_MAX && ts_var >= SOLAR_MIN) {
-                // console.log('SHOULD HAVE UPDATED: ' + d.properties.TS_PCODE)
                 return true;
             } else {
                 return false;
