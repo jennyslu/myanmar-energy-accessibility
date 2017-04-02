@@ -11,7 +11,7 @@
 }
 
 .d3-slider-range {
-  background:#2980b9;
+  background:#ABD9D9;
   left:0px;
   right:0px;
   height: 0.8em;
@@ -19,7 +19,7 @@
 }
 
 .d3-slider-range-vertical {
-  background:#2980b9;
+  background:#ABD9D9;
   left:0px;
   right:0px;
   position: absolute;
