@@ -398,7 +398,7 @@ function townshipDisplay(d) {
             cell <= CELL_MAX && cell >= CELL_MIN &&
             sun <= SOLAR_MAX && sun >= SOLAR_MIN)
 
-    return show
+    return show;
 }
 
 function popBrushed(evt, value) {
@@ -409,12 +409,8 @@ function popBrushed(evt, value) {
   // Highlight appropriate bars
   mapLayer.selectAll("path")
     .classed("highlight", function(d){
-        ts_var = d.properties.Total
-        if (ts_var <= POP_MAX && ts_var >= POP_MIN) {
-            return true;
-        } else {
-            return false;
-        }
+        result = townshipDisplay(d)
+        return result;
     });
 }
 
@@ -427,13 +423,8 @@ function elecBrushed(evt, value) {
   // Highlight appropriate townships
   mapLayer.selectAll("path")
     .classed("highlight", function(d){
-        ts_var = d.properties.Prop_Electricity*100
-        if (ts_var <= ELEC_MAX && ts_var >= ELEC_MIN) {
-            // console.log('SHOULD HAVE UPDATED: ' + d.properties.TS_PCODE)
-            return true;
-        } else {
-            return false;
-        }
+        result = townshipDisplay(d)
+        return result;
     });
 }
 
@@ -445,12 +436,8 @@ function youngBrushed(evt, value) {
   // Highlight appropriate bars
   mapLayer.selectAll("path")
     .classed("highlight", function(d){
-        ts_var = d.properties.age_above_15*100
-        if (ts_var <= YOUNG_MAX && ts_var >= YOUNG_MIN) {
-            return true;
-        } else {
-            return false;
-        }
+        result = townshipDisplay(d)
+        return result;
     });
 }
 
@@ -462,12 +449,8 @@ function eduBrushed(evt, value) {
   // Highlight appropriate bars
   mapLayer.selectAll("path")
     .classed("highlight", function(d){
-        ts_var = (100-d.properties.below_medium_education*100)
-        if (ts_var <= EDU_MAX && ts_var >= EDU_MIN) {
-            return true;
-        } else {
-            return false;
-        }
+        result = townshipDisplay(d)
+        return result;
     });
 }
 
@@ -478,14 +461,10 @@ function depBrushed(evt, value) {
     DEP_MAX = value[1]
     // Highlight appropriate bars
     mapLayer.selectAll("path")
-        .classed("highlight", function(d){
-            ts_var = d.properties.total_dep_ratio*100
-            if (ts_var <= DEP_MAX && ts_var >= DEP_MIN) {
-                return true;
-            } else {
-                return false;
-            }
-        });
+      .classed("highlight", function(d){
+          result = townshipDisplay(d)
+          return result;
+      });
 };
 
 function cellBrushed(evt, value) {
@@ -495,14 +474,10 @@ function cellBrushed(evt, value) {
     CELL_MAX = value[1]
     // Highlight appropriate bars
     mapLayer.selectAll("path")
-        .classed("highlight", function(d){
-            ts_var = d.properties.has_mobile_conv*100
-            if (ts_var <= CELL_MAX && ts_var >= CELL_MIN) {
-                return true;
-            } else {
-                return false;
-            }
-        });
+    .classed("highlight", function(d){
+        result = townshipDisplay(d)
+        return result;
+    });
 };
 
 function solarBrushed(evt, value) {
@@ -513,12 +488,8 @@ function solarBrushed(evt, value) {
     // Highlight appropriate bars
     mapLayer.selectAll("path")
         .classed("highlight", function(d){
-            ts_var = (d.properties.Prop_Solar_System_Energy + d.properties.Prop_Other)*100
-            if (ts_var <= SOLAR_MAX && ts_var >= SOLAR_MIN) {
-                return true;
-            } else {
-                return false;
-            }
+            result = townshipDisplay(d)
+            return result;
         });
 };
 
