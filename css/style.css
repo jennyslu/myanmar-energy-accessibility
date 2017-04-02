@@ -10,7 +10,23 @@ fieldset,img { border: 0; }
 caption,th { text-align: left; }
 /* @end */
 
+<<<<<<< HEAD
+#main-wrapper {
+<<<<<<< HEAD:style.css
+    width: 800px;
+		height: 1200px;
+    margin: 0 0 0 0;
+	padding: 0 0 0 0;
+=======
+    width: 960px;
+    margin: 0 auto;
+		font-family: 'Inconsolata', Monaco, "Lucida Console", Consolas, "Courier New";
+>>>>>>> 6ec85a5e50e20b70dc2f2669977b5a965933f9ff:css/style.css
+}
+/*
+=======
 
+>>>>>>> f8dc21223f257769eb829bdace2f626036a51bdd
 #metrics { width: 920px; margin: 0 auto 15px 0; font-family: Helvetica, sans-serif; }
 #metrics #instruct {
     text-align: left;
@@ -30,16 +46,17 @@ caption,th { text-align: left; }
     padding: 4px 0;
     display: inline-block;
     width: 108px;
-    /*background: #e0e0e0;*/
     cursor: pointer;
     text-align: center;
     font-size: 11px;
     border: 1px solid #e0e0e0;
 }
 #metrics ul li.bottom { margin-bottom: 0; }
-#metrics #motor { width: 250px; float: left; border-right: 1px solid #ccc; margin-right: 15px; }
-#metrics #non-motor { width: 250px; float: left; padding-left: 5px;  }
+#metrics #q1 { width: 250px; float: left; border-right: 1px solid #ccc; margin-right: 15px; }
+#metrics #q2 { width: 250px; float: left; padding-left: 5px; }
+#metrics #q3 { width: 250px; float: left; padding-left: 5px; }
 #metrics .block-button { width: 80px; display: block; float:left; clear:both; }
+*/
 div.tooltip {
     position: absolute;
     text-align: left;
@@ -79,7 +96,16 @@ path.selected {
     stroke-width: 0.5px;
 }
 
+<<<<<<< HEAD
+path.highlight {
+	fill: #f1e12b;
+	color: #f1e12b;
+}
 
+/*
+=======
+
+>>>>>>> f8dc21223f257769eb829bdace2f626036a51bdd
 path.HC01_EST_VC04, #metrics ul li.selected.HC01_EST_VC04, .tooltip .HC01_EST_VC04 { fill: #8dd3c7; background: #8dd3c7; }
 path.HC01_EST_VC05, #metrics ul li.selected.HC01_EST_VC05, .tooltip .HC01_EST_VC05 { fill: #bc80bd; background: #bc80bd; }
 path.HC01_EST_VC10, #metrics ul li.selected.HC01_EST_VC10, .tooltip .HC01_EST_VC10 { fill: #bebada; background: #bebada; }
@@ -88,5 +114,5 @@ path.HC01_EST_VC12, #metrics ul li.selected.HC01_EST_VC12, .tooltip .HC01_EST_VC
 path.HC01_EST_VC13, #metrics ul li.selected.HC01_EST_VC13, .tooltip .HC01_EST_VC13 { fill: #fdb462; background: #fdb462; }
 path.HC01_EST_VC14, #metrics ul li.selected.HC01_EST_VC14, .tooltip .HC01_EST_VC14 { fill: #b3de69; background: #b3de69; }
 path.NODATA { fill: #fff; }
-
+*/
 .clr { clear: both; }
