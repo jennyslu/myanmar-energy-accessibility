@@ -60,7 +60,7 @@ svg {
     <h2>People</h2>
 
     <h3>
-        15 &ndash; 64:
+        15 &mdash; 64:
         <span id="youngtextmin">56.3</span>% &mdash; <span id="youngtextmax">89.1</span>%
     </h3>
     <div id="young"></div>
@@ -84,6 +84,12 @@ svg {
         <span id="celltextmin">0.0</span>% &mdash; <span id="celltextmax">95.4</span>%
     </h3>
     <div id="cell"></div>
+
+    <h3>
+        Solar:
+        <span id="solartextmin">0.0</span>% &mdash; <span id="solartextmax">61.2</span>%
+    </h3>
+    <div id="solar"></div>
 
     <div id="road">
       <h3>TOGGLE ROADS</h3>
@@ -120,17 +126,17 @@ svg {
         <div class="HC01_EST_VC11_val val"></div>
     </div>
     <div data-metric="HC01_EST_VC12" class="line">
-        <div class="HC01_EST_VC12 symbol"></div> Private Generator
+        <div class="HC01_EST_VC12 symbol"></div> Dependents ratio
         <div class="HC01_EST_VC12_val moe"></div>
         <div class="HC01_EST_VC12_val val"></div>
     </div>
     <div data-metric="HC01_EST_VC13" class="line">
-        <div class="HC01_EST_VC13 symbol"></div> Private Water Mill
+        <div class="HC01_EST_VC13 symbol"></div> Cellphone
         <div class="HC01_EST_VC13_val moe"></div>
         <div class="HC01_EST_VC13_val val"></div>
     </div>
     <div data-metric="HC01_EST_VC14" class="line">
-        <div class="HC01_EST_VC14 symbol"></div> Solar and Other
+        <div class="HC01_EST_VC14 symbol"></div> Solar and other
         <div class="HC01_EST_VC14_val moe"></div>
         <div class="HC01_EST_VC14_val val"></div>
     </div>
@@ -157,6 +163,8 @@ var DEP_MIN = 24.5;
 var DEP_MAX = 94;
 var CELL_MIN = 0;
 var CELL_MAX = 95.4;
+var SOLAR_MIN = 0;
+var SOLAR_MAX = 61.2;
 
 // frame
 var width = 600,
@@ -208,6 +216,9 @@ var depSlider = d3.slider()
 var cellSlider = d3.slider()
   .value( [ CELL_MIN, CELL_MAX ] )
   .on("slide", cellBrushed);
+var solarSlider = d3.slider()
+  .value( [ SOLAR_MIN, SOLAR_MAX ] )
+  .on("slide", solarBrushed);
 
 // main SVG
 var svg = d3.select("svg")
@@ -294,6 +305,7 @@ function draw(error, mapData) {
     d3.select("#edu").call(eduSlider);
     d3.select("#dep").call(depSlider);
     d3.select("#cell").call(cellSlider);
+    d3.select("#solar").call(solarSlider);
 
     // Button to toggle roadLayer on/off
     var roads_button = d3.select("#road")
@@ -352,10 +364,10 @@ function draw(error, mapData) {
               // tooltip metric values
               tooltip.select(".HC01_EST_VC04_val.val").text((d.properties.Total*100).toFixed(0))
               tooltip.select(".HC01_EST_VC05_val.val").text((d.properties.Prop_Electricity*100).toFixed(1) + "%")
-              tooltip.select(".HC01_EST_VC10_val.val").text((d.properties.Prop_Candle*100).toFixed(1) + "%")
-              tooltip.select(".HC01_EST_VC11_val.val").text((d.properties.Prop_Battery*100).toFixed(1) + "%")
-              tooltip.select(".HC01_EST_VC12_val.val").text((d.properties.Prop_Generator_Private*100).toFixed(1) + "%")
-              tooltip.select(".HC01_EST_VC13_val.val").text((d.properties.Prop_Water_Mill_Private*100).toFixed(1) + "%")
+              tooltip.select(".HC01_EST_VC10_val.val").text((d.properties.age_above_15*100).toFixed(1) + "%")
+              tooltip.select(".HC01_EST_VC11_val.val").text((100-d.properties.below_medium_education*100).toFixed(1) + "%")
+              tooltip.select(".HC01_EST_VC12_val.val").text((d.properties.total_dep_ratio*100).toFixed(1) + "%")
+              tooltip.select(".HC01_EST_VC13_val.val").text((d.properties.has_mobile_conv*100).toFixed(1) + "%")
               tooltip.select(".HC01_EST_VC14_val.val").text(((d.properties.Prop_Solar_System_Energy + d.properties.Prop_Other)*100).toFixed(1) + "%")
         })
         .on("mouseout", function() {
@@ -470,6 +482,24 @@ function cellBrushed(evt, value) {
         .classed("highlight", function(d){
             ts_var = d.properties.has_mobile_conv*100
             if (ts_var <= CELL_MAX && ts_var >= CELL_MIN) {
+                // console.log('SHOULD HAVE UPDATED: ' + d.properties.TS_PCODE)
+                return true;
+            } else {
+                return false;
+            }
+        });
+};
+
+function solarBrushed(evt, value) {
+    d3.select('#solartextmin').text(value[0].toFixed(1));
+    d3.select('#solartextmax').text(value[1].toFixed(1));
+    SOLAR_MIN = value[0]
+    SOLAR_MAX = value[1]
+    // Highlight appropriate bars
+    mapLayer.selectAll("path")
+        .classed("highlight", function(d){
+            ts_var = (d.properties.Prop_Solar_System_Energy + d.properties.Prop_Other)*100
+            if (ts_var <= SOLAR_MAX && ts_var >= SOLAR_MIN) {
                 // console.log('SHOULD HAVE UPDATED: ' + d.properties.TS_PCODE)
                 return true;
             } else {
