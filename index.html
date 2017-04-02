@@ -2,11 +2,10 @@
 <html>
 <head>
 <title>Myanmar Energy Accessibility</title>
+<link rel="stylesheet" href="css/new_stylesheet.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/d3.slider.css" type="text/css" media="screen" />
+<link href='https://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
 <style type='text/css'>
-.map-layer {
-    stroke: #aaa;
-}
-
 .road-layer {
     fill-opacity: 0;
     stroke: #C21F1F;
@@ -27,13 +26,10 @@
 
 svg {
     position: absolute;
-    left: 0px;
-    top: 0px;
+    left: 0;
+    top: 0;
 }
 </style>
-<link rel="stylesheet" href="css/new_stylesheet.css" type="text/css" media="screen" />
-<link rel="stylesheet" href="css/d3.slider.css" type="text/css" media="screen" />
-<link href='https://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
 </head>
 
 <body>
@@ -58,19 +54,21 @@ svg {
 
     <div id="elec"></div>
 
-<h2>People</h2>
+    <h2>People</h2>
 
-<h3>
-  15 &ndash; 64:
-  <span id="youngtextmin">10.0</span>% &mdash; <span id="youngtextmax">40.0</span>%
-</h3>
-<div id="young"></div>
+    <h3>
+        15 &ndash; 64:
+        <span id="youngtextmin">10.0</span>% &mdash; <span id="youngtextmax">40.0</span>%
+    </h3>
 
-<h3>
-  Mid+ education:
-  <span id="edutextmin">10.0</span>% &mdash; <span id="edutextmax">40.0</span>%
-</h3>
-<div id="edu"></div>
+    <div id="young"></div>
+
+    <h3>
+        Mid+ education:
+        <span id="edutextmin">10.0</span>% &mdash; <span id="edutextmax">40.0</span>%
+    </h3>
+
+    <div id="edu"></div>
 
 </div>
 
@@ -162,13 +160,13 @@ var color = d3.scale.linear()
 
 // Slider
 var elecSlider = d3.slider()
-  .value( [ ELEC_MIN, ELEC_MAX ] )
-  .on("slide", elecBrushed);
+    .value( [ ELEC_MIN, ELEC_MAX ] )
+    .on("slide", elecBrushed);
 var popSlider = d3.slider()
-  .min(POP_MIN)
-  .max(POP_MAX)
-  .value( [ POP_MIN, POP_MAX ] )
-  .on("slide", popBrushed);
+    .min(POP_MIN)
+    .max(POP_MAX)
+    .value( [ POP_MIN, POP_MAX ] )
+    .on("slide", popBrushed);
 
 // main SVG
 var svg = d3.select("svg")
@@ -335,58 +333,40 @@ function zoomed() {
 
 // Update user settings when slider brushed, then update
 function elecBrushed(evt, value) {
-  d3.select('#electextmin').text(value[0].toFixed(1));
-  d3.select('#electextmax').text(value[1].toFixed(1));
-  ELEC_MIN = value[0]
-  ELEC_MAX = value[1]
+    d3.select('#electextmin').text(value[0].toFixed(1));
+    d3.select('#electextmax').text(value[1].toFixed(1));
+    ELEC_MIN = value[0]
+    ELEC_MAX = value[1]
 
-  // Highlight appropriate bars
-  mapLayer.selectAll("path")
-    .classed("highlight", function(d){
-        ts_var = d.properties.Prop_Electricity*100
-        if (ts_var <= ELEC_MAX && ts_var >= ELEC_MIN) {
-            // console.log('SHOULD HAVE UPDATED: ' + d.properties.TS_PCODE)
-            return true;
-        } else {
-            return false;
-        }
-    });
-};
-
-function elecBrushed(evt, value) {
-  d3.select('#electextmin').text(value[0].toFixed(1));
-  d3.select('#electextmax').text(value[1].toFixed(1));
-  ELEC_MIN = value[0]
-  ELEC_MAX = value[1]
-  // Highlight appropriate bars
-  mapLayer.selectAll("path")
-    .classed("highlight", function(d){
-        ts_var = d.properties.Prop_Electricity*100
-        if (ts_var <= ELEC_MAX && ts_var >= ELEC_MIN) {
-            // console.log('SHOULD HAVE UPDATED: ' + d.properties.TS_PCODE)
-            return true;
-        } else {
-            return false;
-        }
-    });
+    // Highlight appropriate bars
+    mapLayer.selectAll("path")
+        .classed("highlight", function(d){
+            ts_var = d.properties.Prop_Electricity*100
+            if (ts_var <= ELEC_MAX && ts_var >= ELEC_MIN) {
+                // console.log('SHOULD HAVE UPDATED: ' + d.properties.TS_PCODE)
+                return true;
+            } else {
+                return false;
+            }
+        });
 };
 
 function popBrushed(evt, value) {
-  d3.select('#poptextmin').text(value[0].toFixed(0));
-  d3.select('#poptextmax').text(value[1].toFixed(0));
-  POP_MIN = value[0]
-  POP_MAX = value[1]
-  // Highlight appropriate bars
-  mapLayer.selectAll("path")
-    .classed("highlight", function(d){
-        ts_var = d.properties.Total*100
-        if (ts_var <= POP_MAX && ts_var >= POP_MIN) {
-            // console.log('SHOULD HAVE UPDATED: ' + d.properties.TS_PCODE)
-            return true;
-        } else {
-            return false;
-        }
-    });
+    d3.select('#poptextmin').text(value[0].toFixed(0));
+    d3.select('#poptextmax').text(value[1].toFixed(0));
+    POP_MIN = value[0]
+    POP_MAX = value[1]
+    // Highlight appropriate bars
+    mapLayer.selectAll("path")
+        .classed("highlight", function(d){
+            ts_var = d.properties.Total*100
+            if (ts_var <= POP_MAX && ts_var >= POP_MIN) {
+                // console.log('SHOULD HAVE UPDATED: ' + d.properties.TS_PCODE)
+                return true;
+            } else {
+                return false;
+            }
+        });
 };
 
 </script>
