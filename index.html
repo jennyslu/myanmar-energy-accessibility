@@ -31,7 +31,7 @@ svg {
     top: 0px;
 }
 </style>
-<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/new_stylesheet.css" type="text/css" media="screen" />
 <link rel="stylesheet" href="css/d3.slider.css" type="text/css" media="screen" />
 <link href='https://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
 </head>
@@ -41,12 +41,22 @@ svg {
 
 <!-- side bar -->
 <div id="toolbar">
+
+    <h2>Electrification</h2>
+
+    <h3>
+        Population:
+        <span id="poptextmin">285</span> &mdash; <span id="poptextmax">148711</span>
+    </h3>
+
+    <div id="pop"></div>
+
     <h3>
         Electrification:
-        <span id="slider3textmin">10</span>,
-        <span id="slider3textmax">25</span>
+        <span id="electextmin">10.0</span>% &mdash; <span id="electextmax">40.0</span>%
     </h3>
-    <div id="slider3"></div>
+
+    <div id="elec"></div>
 
 </div>
 
@@ -91,7 +101,9 @@ svg {
 </div>
 
 <!-- map -->
-<svg></svg>
+<div id="map">
+    <svg></svg>
+</div>
 
 </div><!-- @end #main-wrapper -->
 
@@ -101,7 +113,9 @@ svg {
 
 <script>
 
-// User-set hours with slider
+// slider values
+var POP_MIN = 285;
+var POP_MAX = 148711;
 var ELEC_MIN = 10;
 var ELEC_MAX = 40;
 
@@ -124,7 +138,23 @@ var path = d3.geo.path()
 // chained zoom function
 var zoom = d3.behavior.zoom()
     .scaleExtent([1, 100])
-    .on('zoom', zoomed);
+    .on("zoom", zoomed);
+
+// color scale
+var color = d3.scale.linear()
+    .domain([0,100])
+    .range(["#ffffff", "#8dd3c7"])
+    .interpolate(d3.interpolateLab);
+
+// Slider
+var elecSlider = d3.slider()
+  .value( [ ELEC_MIN, ELEC_MAX ] )
+  .on("slide", elecBrushed);
+var popSlider = d3.slider()
+  .min(POP_MIN)
+  .max(POP_MAX)
+  .value( [ POP_MIN, POP_MAX ] )
+  .on("slide", popBrushed);
 
 // main SVG
 var svg = d3.select("svg")
@@ -147,18 +177,6 @@ var hvLayer = g.append('g')
 var mvLayer = g.append('g')
     .classed('mv-layer', true);
 
-// color scale
-var color = d3.scale.linear()
-    .domain([0, 100])
-    .range(["#ffffff", "#8dd3c7"])
-    .interpolate(d3.interpolateLab);
-
-// Slider
-var propSlider = d3.slider()
-    .axis(true)
-    .value([10, 25])
-    .on("slide", brushed);
-
 // select tooltip div and make invisible
 var tooltip = d3.select("#tooltip")
     .attr("class", "tooltip")
@@ -180,7 +198,8 @@ function draw(error, mapData) {
     // color.domain([0, d3.max(features, popFn)]);
 
     // TOOL BAR SLIDERS
-    d3.select("#slider3").call(propSlider);
+    d3.select("#elec").call(elecSlider);
+    d3.select("#pop").call(popSlider);
 
     /*
     d3.select("#electrifactionslider")
@@ -198,12 +217,12 @@ function draw(error, mapData) {
         .data(features) // selection.data() binds data to DOM elements
         .enter() // enter to create new, data-bound placeholder elements
         .append("path") // insert path elements where placeholders are
-        .attr("id", function(d){return d.properties.TS_PCODE}) // set id attribute as township pcode
+        .attr("id", function(d){return d.properties.TS_PCODE;}) // set id attribute as township pcode
         .attr("d", path) //set path description to path returned by area
         .attr("vector-effect", "non-scaling-stroke") // stroke attribute
-        .style("fill", "#AAAAAA") // fill with grey
-        .style("opacity", 0.7) // lighter opacity
-        .style("stroke","#fff" ) // white borders
+        .attr("fill", "#BBBBBB") // fill with grey
+        .attr("opacity", 0.7) // lighter opacity
+        .attr("stroke","#fff" ) // white borders
         .on("mouseover", function(d) {
               d3.select(this).classed("selected", true); // add "selected" class
               tooltip.transition().duration(100).style("opacity", 1) // tooltip become visible
@@ -241,7 +260,7 @@ var roads_button = g.append('text')
     .text('Roads')
     .style({'font-size': 24, 'text-transform': 'uppercase'})
     .attr('x', 100)
-    .attr('y', 200)
+    .attr('y', 400)
     .on('click', function() {
         var visibility = roadLayer.attr('visibility') == 'hidden' ? 'visible' : 'hidden';
         roadLayer.attr('visibility', visibility);
@@ -252,7 +271,7 @@ var lines_button = g.append('text')
     .text('Lines')
     .style({'font-size': 24, 'text-transform': 'uppercase'})
     .attr('x', 100)
-    .attr('y', 250)
+    .attr('y', 450)
     .on('click', function() {
         var visibility = mvLayer.attr('visibility') == 'hidden' ? 'visible' : 'hidden';
         mvLayer.attr('visibility', visibility);
@@ -301,25 +320,54 @@ function zoomed() {
 };
 
 // Update user settings when slider brushed, then update
-function brushed(evt, value) {
-  d3.select('#slider3textmin').text(value[0]);
-  d3.select('#slider3textmax').text(value[1]);
+function elecBrushed(evt, value) {
+  d3.select('#electextmin').text(value[0].toFixed(1));
+  d3.select('#electextmax').text(value[1].toFixed(1));
   ELEC_MIN = value[0]
   ELEC_MAX = value[1]
-  update();
+
+  // Highlight appropriate bars
+  mapLayer.selectAll("path")
+    .classed("highlight", function(d){
+        ts_var = d.properties.Prop_Electricity*100
+        if (ts_var <= ELEC_MAX && ts_var >= ELEC_MIN) {
+            // console.log('SHOULD HAVE UPDATED: ' + d.properties.TS_PCODE)
+            return true;
+        } else {
+            return false;
+        }
+    });
 };
 
-// Update the bar chart
-function update() {
-    // Highlight appropriate bars
-    mapLayer.selectAll("path").call(highlightAreas);
+function elecBrushed(evt, value) {
+  d3.select('#electextmin').text(value[0].toFixed(1));
+  d3.select('#electextmax').text(value[1].toFixed(1));
+  ELEC_MIN = value[0]
+  ELEC_MAX = value[1]
+  // Highlight appropriate bars
+  mapLayer.selectAll("path")
+    .classed("highlight", function(d){
+        ts_var = d.properties.Prop_Electricity*100
+        if (ts_var <= ELEC_MAX && ts_var >= ELEC_MIN) {
+            // console.log('SHOULD HAVE UPDATED: ' + d.properties.TS_PCODE)
+            return true;
+        } else {
+            return false;
+        }
+    });
 };
 
-// Highlight the bars that are less than or equal to user-defined duration
-function highlightAreas(townships) {
-	// curr_total = 0;
-    townships.classed("highlight", function(d,i) {
-        if (d.properties.Prop_Electricity <= ELEC_MAX && d.properties.Prop_Electricity >= ELEC_MIN) {
+function popBrushed(evt, value) {
+  d3.select('#poptextmin').text(value[0].toFixed(0));
+  d3.select('#poptextmax').text(value[1].toFixed(0));
+  POP_MIN = value[0]
+  POP_MAX = value[1]
+  // Highlight appropriate bars
+  mapLayer.selectAll("path")
+    .classed("highlight", function(d){
+        ts_var = d.properties.Total*100
+        if (ts_var <= POP_MAX && ts_var >= POP_MIN) {
+            // console.log('SHOULD HAVE UPDATED: ' + d.properties.TS_PCODE)
             return true;
         } else {
             return false;

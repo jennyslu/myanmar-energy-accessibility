@@ -10,6 +10,7 @@ fieldset,img { border: 0; }
 caption,th { text-align: left; }
 /* @end */
 
+<<<<<<< HEAD
 #main-wrapper {
 <<<<<<< HEAD:style.css
     width: 800px;
@@ -23,6 +24,9 @@ caption,th { text-align: left; }
 >>>>>>> 6ec85a5e50e20b70dc2f2669977b5a965933f9ff:css/style.css
 }
 /*
+=======
+
+>>>>>>> f8dc21223f257769eb829bdace2f626036a51bdd
 #metrics { width: 920px; margin: 0 auto 15px 0; font-family: Helvetica, sans-serif; }
 #metrics #instruct {
     text-align: left;
@@ -92,12 +96,16 @@ path.selected {
     stroke-width: 0.5px;
 }
 
+<<<<<<< HEAD
 path.highlight {
 	fill: #f1e12b;
 	color: #f1e12b;
 }
 
 /*
+=======
+
+>>>>>>> f8dc21223f257769eb829bdace2f626036a51bdd
 path.HC01_EST_VC04, #metrics ul li.selected.HC01_EST_VC04, .tooltip .HC01_EST_VC04 { fill: #8dd3c7; background: #8dd3c7; }
 path.HC01_EST_VC05, #metrics ul li.selected.HC01_EST_VC05, .tooltip .HC01_EST_VC05 { fill: #bc80bd; background: #bc80bd; }
 path.HC01_EST_VC10, #metrics ul li.selected.HC01_EST_VC10, .tooltip .HC01_EST_VC10 { fill: #bebada; background: #bebada; }
