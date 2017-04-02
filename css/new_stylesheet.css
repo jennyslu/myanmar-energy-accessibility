@@ -1,16 +1,14 @@
 #toolbar {
-    width: 300px;
-    height: 1200px;
+    width: 320px;
+    height: 1100px;
     margin-top: 20px;
     float:left;
 }
 
 #map {
     float:left;
-    width: 900px;
-    height: 1200px;
-    margin: 0 0 0 0;
-    padding: 0 0 0 0;
+    width: 650px;
+    height: 1100px;
 }
 
 #main-wrapper {
@@ -93,8 +91,9 @@ div.tooltip .moe {
 }
 
 path.selected {
-    stroke: #000;
     stroke-width: 0.5px;
+    fill:	#084f4e;
+    fill-opacity: 0.5;
 }
 
 path.HC01_EST_VC04, #metrics ul li.selected.HC01_EST_VC04, .tooltip .HC01_EST_VC04 { fill: #8dd3c7; background: #8dd3c7; }

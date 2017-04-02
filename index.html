@@ -8,19 +8,19 @@
 <style type='text/css'>
 .road-layer {
     fill-opacity: 0;
-    stroke: #00c;
+    stroke: #C21F1F;
     stroke-opacity: 0.5;
 }
 
 .hv-layer {
     fill-opacity: 0;
-    stroke: #900;
+    stroke: #35B635;
     stroke-opacity: 0.5;
 }
 
 .mv-layer {
     fill-opacity: 0;
-    stroke: #600;
+    stroke: #385598;
     stroke-opacity: 0.5;
 }
 
@@ -167,8 +167,8 @@ var SOLAR_MIN = 0;
 var SOLAR_MAX = 61.2;
 
 // frame
-var width = 800,
-    height = 1200,
+var width = 600,
+    height = 1100,
     center = [width / 2, height / 2],
     defaultFill = "#e0e0e0";
 
@@ -233,16 +233,13 @@ var mapLayer = g.append("g")
     .classed("map-layer", true);
 
 var roadLayer = g.append('g')
-    .classed('road-layer', true)
-    .attr('visibility', 'hidden');
+    .classed('road-layer', true);
 
 var hvLayer = g.append('g')
-    .classed('hv-layer', true)
-    .attr('visibility', 'hidden');
+    .classed('hv-layer', true);
 
 var mvLayer = g.append('g')
-    .classed('mv-layer', true)
-    .attr('visibility', 'hidden');
+    .classed('mv-layer', true);
 
 // select tooltip div and make invisible
 var tooltip = d3.select("#tooltip")
