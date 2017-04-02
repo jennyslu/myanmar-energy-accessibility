@@ -102,6 +102,10 @@ var POP_MIN = 285;
 var POP_MAX = 148711;
 var ELEC_MIN = 10;
 var ELEC_MAX = 40;
+var YOUNG_MIN = 15;
+var YOUNG_MAX = 30;
+var EDU_MIN = 10;
+var EDU_MAX = 38;
 
 // frame
 var width = 960,
@@ -137,6 +141,13 @@ var popSlider = d3.slider()
   .max(POP_MAX)
   .value( [ POP_MIN, POP_MAX ] )
   .on("slide", popBrushed);
+
+var youngSlider = d3.slider()
+  .value( [ YOUNG_MIN, YOUNG_MAX ] )
+  .on("slide", youngBrushed);
+var eduSlider = d3.slider()
+  .value( [ EDU_MIN, EDU_MAX ] )
+  .on("slide", eduBrushed);
 
 // main SVG
 var svg = d3.select("svg")
@@ -249,11 +260,29 @@ function elecBrushed(evt, value) {
     });
 }
 
-function elecBrushed(evt, value) {
-  d3.select('#electextmin').text(value[0].toFixed(1));
-  d3.select('#electextmax').text(value[1].toFixed(1));
-  ELEC_MIN = value[0]
-  ELEC_MAX = value[1]
+function popBrushed(evt, value) {
+  d3.select('#poptextmin').text(value[0].toFixed(0));
+  d3.select('#poptextmax').text(value[1].toFixed(0));
+  POP_MIN = value[0]
+  POP_MAX = value[1]
+  // Highlight appropriate bars
+  mapLayer.selectAll("path")
+    .classed("highlight", function(d){
+        ts_var = d.properties.Total*100
+        if (ts_var <= POP_MAX && ts_var >= POP_MIN) {
+            // console.log('SHOULD HAVE UPDATED: ' + d.properties.TS_PCODE)
+            return true;
+        } else {
+            return false;
+        }
+    });
+}
+
+function youngBrushed(evt, value) {
+  d3.select('#youngtextmin').text(value[0].toFixed(1));
+  d3.select('#youngtextmax').text(value[1].toFixed(1));
+  YOUNG_MIN = value[0]
+  YOUNG_MAX = value[1]
   // Highlight appropriate bars
   mapLayer.selectAll("path")
     .classed("highlight", function(d){
@@ -267,16 +296,16 @@ function elecBrushed(evt, value) {
     });
 }
 
-function popBrushed(evt, value) {
-  d3.select('#poptextmin').text(value[0].toFixed(0));
-  d3.select('#poptextmax').text(value[1].toFixed(0));
-  POP_MIN = value[0]
-  POP_MAX = value[1]
+function eduBrushed(evt, value) {
+  d3.select('#edutextmin').text(value[0].toFixed(1));
+  d3.select('#edutextmax').text(value[1].toFixed(1));
+  EDU_MIN = value[0]
+  EDU_MAX = value[1]
   // Highlight appropriate bars
   mapLayer.selectAll("path")
     .classed("highlight", function(d){
-        ts_var = d.properties.Total*100
-        if (ts_var <= POP_MAX && ts_var >= POP_MIN) {
+        ts_var = d.properties.Prop_Electricity*100
+        if (ts_var <= ELEC_MAX && ts_var >= ELEC_MIN) {
             // console.log('SHOULD HAVE UPDATED: ' + d.properties.TS_PCODE)
             return true;
         } else {
