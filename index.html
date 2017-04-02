@@ -14,7 +14,25 @@
     stroke: #aaa;
 }
 
-text{
+.road-layer {
+    fill-opacity: 0;
+    stroke: #C21F1F;
+    stroke-opacity: 0.5;
+}
+
+.hv-layer {
+    fill-opacity: 0;
+    stroke: #35B635;
+    stroke-opacity: 0.5;
+}
+
+.mv-layer {
+    fill-opacity: 0;
+    stroke: #385598;
+    stroke-opacity: 0.5;
+}
+
+text {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-weight: 300;
 }
@@ -22,6 +40,21 @@ text{
 text.big-text {
     font-size: 30px;
     font-weight: 400;
+}
+
+svg {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+}
+
+.button {
+    fill: #000;
+    color: #fff;
+}
+
+.roads {
+    z-index: 10000000;
 }
 </style>
 </head>
@@ -93,7 +126,7 @@ var path = d3.geo.path()
     .projection(projection);
 
 var zoom = d3.behavior.zoom()
-    .scaleExtent([1, 30])
+    .scaleExtent([1, 100])
     .on('zoom', zoomed);
 
 var svg = d3.select('svg')
@@ -108,27 +141,31 @@ svg.call(zoom)
 var mapLayer = g.append('g')
     .classed('map-layer', true);
 
+var roadLayer = g.append('g')
+    .classed('road-layer', true);
+
+var hvLayer = g.append('g')
+    .classed('hv-layer', true);
+
+var mvLayer = g.append('g')
+    .classed('mv-layer', true);
+
 var bigText = g.append('text')
     .classed('big-text', true)
     .attr('x', 100)
     .attr('y', 100);
-
-function zoomed() {
-    g.attr("transform",
-        "translate(" + zoom.translate() + ")" + "scale(" + zoom.scale() + ")");
-};
 
 d3.json('data/ts_2.geojson', function(error, mapData) {
     var tooltip = d3.select("#tooltip")
      .attr("class", "tooltip")
      .style("opacity", 0);
 
-    var features = mapData.features;
+    var mapFeatures = mapData.features;
 
-    color.domain([0, d3.max(features, popFn)]);
+    color.domain([0, d3.max(mapFeatures, popFn)]);
 
     mapLayer.selectAll('path')
-        .data(features)
+        .data(mapFeatures)
         .enter()
         .append('path')
         .attr('d', path)
@@ -166,6 +203,61 @@ d3.json('data/ts_2.geojson', function(error, mapData) {
               .style("opacity", 0);
             });
 
+
+});
+
+var roads_button = g.append('text')
+    .text('Roads')
+    .style({'font-size': 12, 'text-transform': 'uppercase'})
+    .attr('x', 100)
+    .attr('y', 100)
+    .on('click', function() {
+        var visibility = roadLayer.attr('visibility') == 'hidden' ? 'visible' : 'hidden';
+        roadLayer.attr('visibility', visibility);
+    });
+
+var lines_button = g.append('text')
+    .text('Lines')
+    .style({'font-size': 12, 'text-transform': 'uppercase'})
+    .attr('x', 100)
+    .attr('y', 150)
+    .on('click', function() {
+        var visibility = mvLayer.attr('visibility') == 'hidden' ? 'visible' : 'hidden';
+        mvLayer.attr('visibility', visibility);
+        hvLayer.attr('visibility', visibility);
+    });
+
+d3.json('data/roads.geojson', function(error, roadData) {
+    var roadFeatures = roadData.features;
+
+    roadLayer.selectAll('path')
+        .data(roadFeatures)
+        .enter()
+        .append('path')
+        .attr('d', path)
+        .attr('vector-effect', 'non-scaling-stroke');
+});
+
+d3.json('data/high_voltage.geojson', function(error, hvData) {
+    var hvFeatures = hvData.features;
+
+    hvLayer.selectAll('path')
+        .data(hvFeatures)
+        .enter()
+        .append('path')
+        .attr('d', path)
+        .attr('vector-effect', 'non-scaling-stroke');
+});
+
+d3.json('data/medium_voltage.geojson', function(error, mvData) {
+    var mvFeatures = mvData.features;
+
+    mvLayer.selectAll('path')
+        .data(mvFeatures)
+        .enter()
+        .append('path')
+        .attr('d', path)
+        .attr('vector-effect', 'non-scaling-stroke');
 });
 
 function mouseover(d) {
@@ -192,6 +284,11 @@ function popFn(d) {
 
 function fillFn(d) {
     return color(popFn(d));
+};
+
+function zoomed() {
+    g.attr("transform",
+        "translate(" + zoom.translate() + ")" + "scale(" + zoom.scale() + ")");
 };
 
 function zoomClick() {
@@ -238,6 +335,7 @@ function interpolateZoom (translate, scale) {
                 };
             });
 };
+
 
 </script>
 </body>
